@@ -1,6 +1,3 @@
-
-
-
 local _G, _ = _G or getfenv()
 
 ACHIEVER_ADDON_NAME = 'Achiever'
@@ -55,7 +52,6 @@ local function split(str, sep)
     return res
 end
 
-
 Achiever:RegisterEvent("ADDON_LOADED")
 Achiever:RegisterEvent("CHAT_MSG_CHANNEL_NOTICE")
 Achiever:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -75,11 +71,8 @@ Achiever.hookChatFrame = function(self, frame)
     local original = frame.AddMessage
     if (original) then
         frame.AddMessage = function(t, message, ...)
-            local s, e  = string.find(message, 'ACHI|', 1, true)
+            local s, e  = string.find(message, 'ACHI#', 1, true)
             if (s == 1 and e == 5) then
-                -- if (ACHIEVER_ADDON_DEBUG) then
-                --     debug('hidden achievement server message: ' .. (message or 'nil'))
-                -- end
                 self:processServerMessage(message)
                 return false --hide this message
             end
@@ -94,7 +87,7 @@ Achiever.achievementFrameSummaryCategorySubscribers = {}
 
 Achiever.processServerMessage = function(self, message)
 
-    local params = split(message, '|')
+    local params = split(message, '#')
     if (params[1] == 'ACHI') then
         if (params[2] == 'AC') then
             --debug('server response: new achievement entry ')
@@ -275,7 +268,7 @@ end
 Achiever.apiRequestCategoryInfo = function(self, version)
 
     --debug('requested information about categories from server, ' .. version)
-    SendChatMessage('.achievements getCategoties ' .. version)
+    SendChatMessage('.achievements getCategories ' .. version)
     --SendChatMessage('!achievements getCategoties ' .. version, 'CHANNEL', nil, Achiever.channelIndex)
 end
 Achiever.apiRequestAchievementInfo = function(self, version)
@@ -334,6 +327,8 @@ Achiever.startup = function(self)
     local factionGroup, localedFaction = UnitFactionGroup("player");
 
     if (not achieverDBpc.debug) then achieverDBpc.debug = "disabled" end
+    if (not achieverDBpc.buttonsmall) then achieverDBpc.buttonsmall = "disabled"; Achiever_Minimap:Hide(); end
+    if (not achieverDBpc.buttonmain) then achieverDBpc.buttonmain = "enabled" end
     if (not achieverDBpc.version) then achieverDBpc.version = 0 end
 
     if (factionGroup == "Alliance") then
@@ -394,27 +389,119 @@ Achiever:SetScript("OnEvent", function()
         debug('ADDON_LOADED')
         Achiever:hookChatFrame(ChatFrame1)
         Achiever:startup()
-        --Achiever:joinChannel()
-        -- AchievementFrameCategories_OnEvent(AchievementFrameCategories, "ADDON_LOADED", ACHIEVER_ADDON_NAME)
-        -- AchievementFrameAchievements_OnEvent(AchievementFrameCategories, "ADDON_LOADED", ACHIEVER_ADDON_NAME)
 	elseif (event == 'CHAT_MSG_CHANNEL_LEAVE') then
         debug('OnEvent CHAT_MSG_CHANNEL_LEAVE')
 	elseif (event == 'CHAT_MSG_ADDON') then
         debug('OnEvent CHAT_MSG_ADDON')
     elseif (event == 'VARIABLES_LOADED') then
         debug('VARIABLES_LOADED')
-        --Achiever:joinChannel()
-	--elseif (event == 'CHAT_MSG_CHANNEL_NOTICE') then
-	--	if (arg9 == Achiever.channel and arg1 == 'YOU_JOINED') then
-	--		Achiever.channelIndex = arg8
-	--		debug('just joined chan index ' .. Achiever.channelIndex)
-    --        debug('just joined chan name ' .. arg9)
-    --        --Achiever:startup()
-	--	end
 	elseif (event == 'PLAYER_ENTERING_WORLD') then
-        --Achiever:joinChannel()
         Achiever:hookChatFrame(ChatFrame1)
         Achiever:startup()
 	end
 end)
 
+NEWBIE_TOOLTIP_ACHIEVEMENT = "View information about your achievements and statistics.";
+TOGGLEACHIEVEMENTS = 'Open Achievements';
+BINDING_HEADER_ACHIEVER = "Achiever";
+BINDING_NAME_TOGGLEACHIEVEMENTS = "Show Achievements";
+
+function AchievementsMicroButton_OnLoad()
+    this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+    this:RegisterEvent("PLAYER_LEVEL_UP");
+    this:RegisterEvent("UPDATE_BINDINGS");
+    this:RegisterEvent("UNIT_LEVEL");
+    this:RegisterEvent("PLAYER_ENTERING_WORLD");
+    this:SetNormalTexture("Interface\\AddOns\\Achiever\\textures\\UI-MicroButton-Achievement-Up");
+    this:SetPushedTexture("Interface\\AddOns\\Achiever\\textures\\UI-MicroButton-Achievement-Down");
+    this:SetDisabledTexture("Interface\\AddOns\\Achiever\\textures\\UI-MicroButton-Achievement-Disabled");
+    this:SetHighlightTexture("Interface\\Buttons\\UI-MicroButton-Hilight");
+    this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+    if ( GetBindingKey("TOGGLEACHIEVEMENTS") ) then
+        this.tooltipText = "Achievements".." "..NORMAL_FONT_COLOR_CODE.."("..GetBindingKey("TOGGLEACHIEVEMENTS")..")"..FONT_COLOR_CODE_CLOSE;
+    else
+        this.tooltipText = "Achievements";
+    end
+    this.newbieText = NEWBIE_TOOLTIP_ACHIEVEMENT;
+end
+
+function AchievementsMicroButton_OnEvent()
+    if ( event == "PLAYER_LEVEL_UP" ) then
+        UpdateAchievementsButton();
+    elseif ( event == "UNIT_LEVEL" or event == "PLAYER_ENTERING_WORLD" ) then
+        UpdateAchievementsButton();
+    elseif ( event == "UPDATE_BINDINGS" ) then
+        if ( GetBindingKey("TOGGLEACHIEVEMENTS") ) then
+            this.tooltipText = "Achievements".." "..NORMAL_FONT_COLOR_CODE.."("..GetBindingKey("TOGGLEACHIEVEMENTS")..")"..FONT_COLOR_CODE_CLOSE;
+        else
+            this.tooltipText = "Achievements";
+        end
+    end
+end
+
+function UpdateAchievementsButton()
+    -- move nearby buttons
+    if ( UnitLevel("player") < 10 ) then
+        AchievementsMicroButton:SetPoint("BOTTOMLEFT", "TalentMicroButton", "BOTTOMLEFT", 0, 0);
+        QuestLogMicroButton:SetPoint("BOTTOMLEFT", "AchievementsMicroButton", "BOTTOMRIGHT", -2, 0);
+    else
+        AchievementsMicroButton:SetPoint("BOTTOMLEFT", "TalentMicroButton", "BOTTOMRIGHT", -2, 0);
+        --QuestLogMicroButton:SetPoint("BOTTOMLEFT", "AchievementsMicroButton", "BOTTOMRIGHT", -2, 0);
+    end
+    -- hide help button to free up space
+    HelpMicroButton:Hide();
+    QuestLogMicroButton:SetPoint("BOTTOMLEFT", "AchievementsMicroButton", "BOTTOMRIGHT", -3, 0);
+
+    -- Update main bar button
+    if ( AchievementFrame:IsShown() ) then
+        AchievementsMicroButton:SetButtonState("PUSHED", 1);
+        SetButtonPulse(AchievementsMicroButton, 0, 1);
+    else
+        AchievementsMicroButton:SetButtonState("NORMAL");
+    end
+
+    if achieverDBpc.buttonsmall == "disabled" then
+        Achiever_Minimap:Hide();
+    end
+end
+
+local function toggleMainButton()
+    if achieverDBpc.buttonmain == "enabled" then
+        achieverDBpc.buttonmain = "disabled"
+        AchievementsMicroButton:Hide();
+        HelpMicroButton:Show();
+        if ( UnitLevel("player") < 10 ) then
+            QuestLogMicroButton:SetPoint("BOTTOMLEFT", "TalentMicroButton", "BOTTOMLEFT", 0, 0);
+        else
+            QuestLogMicroButton:SetPoint("BOTTOMLEFT", "TalentMicroButton", "BOTTOMRIGHT", -2, 0);
+        end
+        DEFAULT_CHAT_FRAME:AddMessage('Achiever main bar button disabled')
+    else
+        achieverDBpc.buttonmain = "enabled"
+        AchievementsMicroButton:Show();
+        UpdateAchievementsButton();
+        DEFAULT_CHAT_FRAME:AddMessage('Achiever main bar button enabled')
+    end
+end
+
+local function toggleSmallButton()
+    if achieverDBpc.buttonsmall == "enabled" then
+        achieverDBpc.buttonsmall = "disabled"
+        Achiever_Minimap:Hide();
+        DEFAULT_CHAT_FRAME:AddMessage('Achiever movable button disabled')
+    else
+        achieverDBpc.buttonsmall = "enabled"
+        Achiever_Minimap:Show();
+        DEFAULT_CHAT_FRAME:AddMessage('Achiever movable button enabled')
+    end
+end
+
+SLASH_ACHIEVERBUTTONMAIN1 = "/acbuttonmain"
+SlashCmdList.ACHIEVERBUTTONMAIN = function()
+    toggleMainButton()
+end
+
+SLASH_ACHIEVERBUTTONSMALL1 = "/acbuttonsmall"
+SlashCmdList.ACHIEVERBUTTONSMALL = function()
+    toggleSmallButton()
+end
