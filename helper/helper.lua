@@ -34,6 +34,24 @@ do
     if not sqrt then sqrt = math.sqrt end
     if not strtrim then strtrim = string.trim end
 
+    -- Legacy table iteration: 1.12 code calls next(t) with a single argument to
+    -- iterate the hash/dictionary portion (WoWLabs extension). Standard Lua 5.1
+    -- in 1.14 requires the second argument, so emulate the old behavior.
+    do
+        local rawnext = next
+        next = function(t, k)
+            if k == nil and t ~= nil then
+                -- find first present key (index 1 or smallest integer key, else pairs order)
+                if t[1] ~= nil then return 1, t[1] end
+                for key, value in rawnext, t do
+                    return key, value
+                end
+                return nil
+            end
+            return rawnext(t, k)
+        end
+    end
+
     -- Legacy script-scope globals: WoW 1.12 XML inline scripts (and some lua code)
     -- still reference `this` and `arg`. Modern frames are passed as self / ... ,
     -- but we keep these alive so nothing errors out with "attempt to index a nil value".
