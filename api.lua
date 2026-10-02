@@ -39,7 +39,11 @@ ACHIEVEMENT_CRITERIA_HIDDEN             = 2;
 ACHIEVEMENT_CRITERIA_FLAG_MONEY_COUNTER = 32;
 
 
-local function IsAchievementCompleted(id)
+-- Exposed globally (prefixed) so the achievement list update loop in
+-- myAchievementUI.lua can build the exact same visible-achievement array that
+-- GetCategoryNumAchievements counts. Keeping count and data iteration in sync is
+-- what stops every recycled row from binding to the same first entry.
+function Achiever_IsAchievementCompleted(id)
     local achievementCompletion = achieverDBpc.achievements[tonumber(id)]
     local completed = false
     if (achievementCompletion) then
@@ -58,18 +62,18 @@ local function GetNextID(id)
     return achieverDB.achievements.nextById[tonumber(id)]
 end
 
-local function IsAchievementVisible(id, includeAll)
+function Achiever_IsAchievementVisible(id, includeAll)
     if (not id) then return false end
     if (includeAll) then return true end
-    if (IsAchievementCompleted(id)) then
+    if (Achiever_IsAchievementCompleted(id)) then
         local nextId = GetNextID(id)
         if (not nextId) then return true end
-        return not IsAchievementCompleted(nextId)
+        return not Achiever_IsAchievementCompleted(nextId)
     end
     if (achieverDB.achievements.data[id].points == 0) then return false end
     local previousId = GetPreviousID(id)
     if (not previousId) then return true end
-    return IsAchievementCompleted(previousId)
+    return Achiever_IsAchievementCompleted(previousId)
 end
 
 local function defaultAchievementOrderComparator(a, b)
@@ -79,7 +83,7 @@ local function defaultAchievementOrderComparator(a, b)
     return a.id < b.id
 end
 
-local function GetCategory(categotyId)
+function Achiever_GetCategory(categotyId)
     return achieverDB.categories.data[categotyId];
 end
 
@@ -119,23 +123,23 @@ function GetAchievementInfo(id, index, includeAll)
     local playerAch = nil
     local all = includeAll or false
     if (index) then
-        local category = GetCategory(id)
+        local category = Achiever_GetCategory(id)
         if (category) then
             local achs = {}
             for _, aid in pairs(achieverDB.achievements.byCategory[tonumber(id)]) do
-                if IsAchievementVisible(aid, all) then
+                if Achiever_IsAchievementVisible(aid, all) then
                     table.insert(achs, GetAchievement(aid))
                 end
             end
             if index <= getn(achs) then
                 table.sort(achs, function(a, b)
-                    local completedA, completedB = IsAchievementCompleted(a.id), IsAchievementCompleted(b.id)
+                    local completedA, completedB = Achiever_IsAchievementCompleted(a.id), Achiever_IsAchievementCompleted(b.id)
                     if (completedA and completedB) then return defaultAchievementOrderComparator(a, b) end
                     if (completedA) then return true end
                     if (completedB) then return false end
                     local previousA, previousB = GetPreviousID(a.id), GetPreviousID(b.id)
-                    completedA = (previousA and IsAchievementCompleted(previousA)) or false
-                    completedB = (previousB and IsAchievementCompleted(previousB)) or false
+                    completedA = (previousA and Achiever_IsAchievementCompleted(previousA)) or false
+                    completedB = (previousB and Achiever_IsAchievementCompleted(previousB)) or false
                     if (completedA and completedB) then return previousA < previousB end
                     if (completedA) then return true end
                     if (completedB) then return false end
@@ -153,7 +157,7 @@ function GetAchievementInfo(id, index, includeAll)
         local month, day, year
         local reward = ''
         if (ach.titleReward ~= '0') then reward = ach.titleReward; end
-        if (IsAchievementCompleted(ach.id)) then
+        if (Achiever_IsAchievementCompleted(ach.id)) then
             debug('GetAchievementInfo '.. ach.id)
             local time = GetAchievementCompletionTime(ach.id)
             month, day, year = tonumber(date('%m', time)), tonumber(date('%d', time)), tonumber(date('%y', time))
@@ -164,6 +168,43 @@ function GetAchievementInfo(id, index, includeAll)
         return ach.id, ach.name, ach.points, completed, month, day, year, ach.description, ach.flags or 0, icon, reward, false, completed, earnedBy, false
     end
     return 1, 'INVALID ACHIEVEMENT', 0, false, nil, nil, nil, '', 0, 0, '', false, false, '', false
+end
+
+-- Build the exact ordered array of visible achievement ids for a category, using
+-- the same visibility filter and ordering that GetAchievementInfo(categoryID, index)
+-- uses internally. The list update loop in myAchievementUI.lua recycles pooled row
+-- frames; binding each row to a concrete id from this array (instead of relying on
+-- positional GetAchievementInfo calls whose count could drift out of sync) guarantees
+-- every row shows its own achievement instead of repeating the first one.
+function Achiever_GetVisibleAchievementIdList(categoryID, includeAll)
+    if (tonumber(categoryID) == -2) then categoryID = 1; end
+    local result = {}
+    local category = achieverDB.categories.data[tonumber(categoryID)]
+    if (not category) then return result end
+    local ids = achieverDB.achievements.byCategory[category.id]
+    if (not ids) then return result end
+    local all = includeAll or false
+    for _, aid in pairs(ids) do
+        if (Achiever_IsAchievementVisible(aid, all)) then
+            table.insert(result, GetAchievement(aid))
+        end
+    end
+    table.sort(result, function(a, b)
+        local completedA, completedB = Achiever_IsAchievementCompleted(a.id), Achiever_IsAchievementCompleted(b.id)
+        if (completedA and completedB) then return defaultAchievementOrderComparator(a, b) end
+        if (completedA) then return true end
+        if (completedB) then return false end
+        local previousA, previousB = GetPreviousID(a.id), GetPreviousID(b.id)
+        completedA = (previousA and Achiever_IsAchievementCompleted(previousA)) or false
+        completedB = (previousB and Achiever_IsAchievementCompleted(previousB)) or false
+        if (completedA and completedB) then return previousA < previousB end
+        if (completedA) then return true end
+        if (completedB) then return false end
+        return defaultAchievementOrderComparator(a, b)
+    end)
+    local idList = {}
+    for i, ach in ipairs(result) do idList[i] = ach.id end
+    return idList
 end
 
 function GetCategoryList()
@@ -213,7 +254,7 @@ end
 
 -- title, parentCategoryID, flags = GetCategoryInfo(categoryID)
 function GetCategoryInfo(categoryID)
-    local category = GetCategory(categoryID)
+    local category = Achiever_GetCategory(categoryID)
     if (category) then return category.name, category.parentId, category.order end
     return '', -1, 0
 end
@@ -237,9 +278,9 @@ function GetCategoryNumAchievements(categoryID, includeAll, completion)
         if (achievements) then
             -- debug('GetCategoryNumAchievements ' .. table.getn(achievements))
             for _, aid in pairs(achievements) do
-                if (IsAchievementVisible(aid, includeAll)) then
+                if (Achiever_IsAchievementVisible(aid, includeAll)) then
                     total = total + 1
-                    if (IsAchievementCompleted(aid)) then
+                    if (Achiever_IsAchievementCompleted(aid)) then
                         completed = completed + 1
                     else
                         incompleted = incompleted + 1
@@ -252,6 +293,28 @@ function GetCategoryNumAchievements(categoryID, includeAll, completion)
     return total, completed, incompleted
 end
 
+-- Ordered list of COMPLETED visible achievement ids in a category.
+function Achiever_GetCompletedAchievementIdList(categoryID)
+    local out = {}
+    for _, id in ipairs(Achiever_GetVisibleAchievementIdList(categoryID)) do
+        if (Achiever_IsAchievementCompleted(id)) then
+            table.insert(out, id)
+        end
+    end
+    return out
+end
+
+-- Ordered list of INCOMPLETED visible achievement ids in a category.
+function Achiever_GetIncompletedAchievementIdList(categoryID)
+    local out = {}
+    for _, id in ipairs(Achiever_GetVisibleAchievementIdList(categoryID)) do
+        if (not Achiever_IsAchievementCompleted(id)) then
+            table.insert(out, id)
+        end
+    end
+    return out
+end
+
 function GetPreviousAchievement(achievementID)
     return GetPreviousID(achievementID)
 end
@@ -259,7 +322,7 @@ end
 -- return The ID of the Achievement and whether it's completed
 function GetNextAchievement(achievementID)
     local nextID = GetNextID(achievementID)
-    if (nextID) then return nextID, IsAchievementCompleted(nextID) end
+    if (nextID) then return nextID, Achiever_IsAchievementCompleted(nextID) end
     return nil, false
 end
 
@@ -517,7 +580,7 @@ end
 -- return completed, month, day, year
 function GetAchievementComparisonInfo(id)
     -- local completion = cmanager:GetTarget()
-    -- if not completion:IsAchievementCompleted(id) then
+    -- if not completion:Achiever_IsAchievementCompleted(id) then
     --     return false, nil, nil, nil
     -- else
     --     local time = completion:GetAchievementCompletionTime(id)
@@ -537,7 +600,7 @@ function GetComparisonAchievementPoints()
     -- local tab = db:GetTab(db.TAB_ID_PLAYER)
     -- for _, category in pairs(tab:GetCategories()) do
     --     for _, achievement in pairs(category:GetAchievements()) do
-    --         if completion:IsAchievementCompleted(achievement.id) then points = points + achievement.points end
+    --         if completion:Achiever_IsAchievementCompleted(achievement.id) then points = points + achievement.points end
     --     end
     -- end
     -- return points
@@ -554,12 +617,12 @@ function SetAchievementSearchString(text)
     -- lastSearchResult = {}
     -- for _, category in pairs(db:GetSelectedTab():GetCategories()) do
     --     for _, ach in pairs(category:GetAchievements()) do
-    --         if string.find(string.lower(ach.name), text) and IsAchievementVisible(ach) then lastSearchResult[#lastSearchResult + 1] = ach end
+    --         if string.find(string.lower(ach.name), text) and Achiever_IsAchievementVisible(ach) then lastSearchResult[#lastSearchResult + 1] = ach end
     --     end
     -- end
     -- local completion = cmanager:GetLocal()
     -- table.sort(lastSearchResult, function(a, b)
-    --     local completedA, completedB = completion:IsAchievementCompleted(a.id), completion:IsAchievementCompleted(b.id)
+    --     local completedA, completedB = completion:Achiever_IsAchievementCompleted(a.id), completion:Achiever_IsAchievementCompleted(b.id)
     --     if completedA and completedB then return a.id < b.id end
     --     if completedA then return true end
     --     if completedB then return false end

@@ -91,6 +91,13 @@ function HybridScrollFrameScrollButton_OnClick (self, button, down)
 end
 
 function HybridScrollFrame_Update (self, totalHeight, displayedHeight)
+	-- Guard against invalid measurements (nil / NaN / <= 0). Feeding these into
+	-- SetVerticalScroll/UpdateScrollChildRect on modern clients breaks clipping
+	-- and makes rows render outside the scroll frame bounds.
+	if ( type(totalHeight) ~= "number" or totalHeight ~= totalHeight ) then totalHeight = 0; end
+	if ( type(displayedHeight) ~= "number" or displayedHeight ~= displayedHeight or displayedHeight <= 0 ) then
+		displayedHeight = self:GetHeight();
+	end
 	local range = totalHeight - self:GetHeight();
 	if ( range > 0 and self.scrollBar ) then
 		local minVal, maxVal = self.scrollBar:GetMinMaxValues();
@@ -124,6 +131,28 @@ function HybridScrollFrame_Update (self, totalHeight, displayedHeight)
 
 	self.range = range;
 	self.scrollChild:SetHeight(displayedHeight);
+	self:UpdateScrollChildRect();
+end
+
+-- WoW 1.14.x regression fix: in vanilla the hybrid scroller only ever called
+-- UpdateScrollChildRect() from CreateButtons and Update(). On Classic (42597)
+-- SetVerticalScroll() no longer refreshes the child clip region as a side
+-- effect, so after the first programmatic scroll the child stays clipped to
+-- its stale rect -- rows appear to ignore the parent's clipping bounds and
+-- overflow down the screen. Re-clamp the scrollbar value here and always
+-- refresh the scroll child rect after changing the vertical offset.
+local originalSetOffset = HybridScrollFrame_SetOffset
+function HybridScrollFrame_SetOffset (self, offset)
+	originalSetOffset(self, offset);
+	local scrollBar = self.scrollBar;
+	if ( scrollBar ) then
+		local minVal, maxVal = scrollBar:GetMinMaxValues();
+		if ( type(minVal) ~= "number" or type(maxVal) ~= "number" or maxVal < 0 ) then
+			scrollBar:SetMinMaxValues(0, math.max((self.range or 0), 0));
+		elseif ( scrollBar:GetValue() > maxVal ) then
+			scrollBar:SetValue(maxVal);
+		end
+	end
 	self:UpdateScrollChildRect();
 end
 
@@ -176,9 +205,16 @@ function HybridScrollFrame_SetOffset (self, offset)
 		scrollHeight = overflow * buttonHeight;
 	end
 
-	if ( math.floor(self.offset or 0) ~= math.floor(element) and self.update ) then
+	-- Only re-run the update function when the whole-row offset actually
+	-- changed, and never re-enter it while it is already running (the update
+	-- function calls back into HybridScrollFrame_Update -> SetOffset). Without
+	-- this guard, expanding/collapsing rows can trigger an infinite recursion
+	-- that spawns frames endlessly on top of each other.
+	if ( math.floor(self.offset or 0) ~= math.floor(element) and self.update and not self.updating ) then
 		self.offset = element;
+		self.updating = true;
 		self.update();
+		self.updating = nil;
 	else
 		self.offset = element;
 	end
@@ -213,8 +249,9 @@ function HybridScrollFrame_CreateButtons (self, buttonTemplate, initialOffsetX, 
 
 	self.buttonHeight = round(buttonHeight);
 
-	local numButtons = math.ceil(self:GetHeight() / buttonHeight) + 1;
+	numButtons = math.ceil(self:GetHeight() / buttonHeight) + 1;
 
+	-- Recycle existing pooled buttons; only create the ones we are missing.
 	local buttonCount = table.getn(buttons)
 	for i = buttonCount + 1, numButtons do
 		button = CreateFrame("BUTTON", buttonName .. i, scrollChild, buttonTemplate);
@@ -222,14 +259,36 @@ function HybridScrollFrame_CreateButtons (self, buttonTemplate, initialOffsetX, 
 		tinsert(buttons, button);
 	end
 
+	-- Reset every pooled button: clear leftover anchors (so vertically stacked
+	-- rows can't overlap after a re-create), uncollapse/hide them and drop any
+	-- stale id/index bindings from a previous session.
+	for i = 1, numButtons do
+		button = buttons[i];
+		button:ClearAllPoints();
+		if ( i == 1 ) then
+			button:SetPoint(initialPoint, scrollChild, initialRelative, initialOffsetX, initialOffsetY);
+		else
+			button:SetPoint(point, buttons[i-1], relativePoint, offsetX, offsetY);
+		end
+		button.id = nil;
+		button.element = nil;
+		if ( button.Collapse ) then button:Collapse(); end
+		button:Hide();
+	end
+
 	scrollChild:SetWidth(self:GetWidth())
 	scrollChild:SetHeight(numButtons * buttonHeight);
+	self.largeButtonTop = nil;
+	self.largeButtonHeight = nil;
+	self.offset = 0;
 	self:SetVerticalScroll(0);
 	self:UpdateScrollChildRect();
 
 	self.buttons = buttons;
 	local scrollBar = self.scrollBar;
-	scrollBar:SetMinMaxValues(0, numButtons * buttonHeight)
-	scrollBar:SetValueStep(.005);
-	scrollBar:SetValue(0);
+	if ( scrollBar ) then
+		scrollBar:SetMinMaxValues(0, math.max((numButtons * buttonHeight) - self:GetHeight(), 0))
+		scrollBar:SetValueStep(.005);
+		scrollBar:SetValue(0);
+	end
 end

@@ -975,7 +975,17 @@ function AchievementFrameAchievements_Update ()
 
 	local offset = HybridScrollFrame_GetOffset(scrollFrame);
 	local buttons = scrollFrame.buttons;
-	local numAchievements, numCompleted, completedOffset = ACHIEVEMENTUI_SELECTEDFILTER(category);
+	if ( not buttons ) then return; end
+	local numAchievements, numCompleted, completedOffset, idList = ACHIEVEMENTUI_SELECTEDFILTER(category);
+	-- Defensive coercion: a nil offset/count here used to throw the whole loop out,
+	-- leaving every recycled button showing its previous (first) entry.
+	offset = tonumber(offset) or 0;
+	completedOffset = tonumber(completedOffset) or 0;
+	numAchievements = tonumber(numAchievements) or 0;
+	local displayAchievements = idList or {};
+	if ( table.getn(displayAchievements) > 0 ) then
+		numAchievements = table.getn(displayAchievements);
+	end
 	local numButtons = table.getn(buttons) -- #buttons;
 
 	-- If the current category is feats of strength and there are no entries then show the explanation text
@@ -993,13 +1003,19 @@ function AchievementFrameAchievements_Update ()
 	local extraHeight = scrollFrame.largeButtonHeight or ACHIEVEMENTBUTTON_COLLAPSEDHEIGHT
 
 	local achievementIndex;
+	local achievementId;
 	local displayedHeight = 0;
 	for i = 1, numButtons do
-		achievementIndex = i + offset + completedOffset;
-		if ( achievementIndex > numAchievements + completedOffset ) then
+		achievementIndex = i + offset;
+		achievementId = displayAchievements[achievementIndex];
+		if ( not achievementId ) then
+			-- no data for this pooled row: unbind it and hide it so a stale
+			-- binding can never render the previous row's achievement here
+			buttons[i].id = nil;
+			buttons[i].element = nil;
 			buttons[i]:Hide();
 		else
-			AchievementButton_DisplayAchievement(buttons[i], category, achievementIndex, selection);
+			AchievementButton_DisplayAchievement(buttons[i], category, achievementIndex, selection, achievementId);
 			displayedHeight = displayedHeight + buttons[i]:GetHeight();
 		end
 	end
@@ -1336,8 +1352,18 @@ function AchievementButton_ToggleTracking (id)
 	return true;
 end
 
-function AchievementButton_DisplayAchievement (button, category, achievement, selectionID)
-	local id, name, points, completed, month, day, year, description, flags, icon, rewardText = GetAchievementInfo(category, achievement);
+function AchievementButton_DisplayAchievement (button, category, achievement, selectionID, achievementId)
+	-- When the scroll update loop hands us the concrete achievement id for this row,
+	-- fetch info BY ID. This keeps recycled rows bound to their own data even if a
+	-- positional (category,index) lookup would resolve to a different entry after the
+	-- visible list changed mid-scroll. Falls back to the legacy positional lookup when
+	-- no id is supplied (e.g. self-refresh from AchievementButton_OnClick).
+	local id, name, points, completed, month, day, year, description, flags, icon, rewardText;
+	if ( achievementId ) then
+		id, name, points, completed, month, day, year, description, flags, icon, rewardText = GetAchievementInfo(achievementId);
+	else
+		id, name, points, completed, month, day, year, description, flags, icon, rewardText = GetAchievementInfo(category, achievement);
+	end
 	debug('AchievementButton_DisplayAchievement '.. category .. ' ' .. id .. ' ' .. (name or 'nil'))
 	if ( not id ) then
 		button:Hide();
@@ -1707,22 +1733,36 @@ function AchievementObjectives_DisplayProgressiveAchievement (objectivesFrame, i
 	objectivesFrame.mode = ACHIEVEMENTMODE_PROGRESSIVE;
 end
 
+-- NOTE (1.14 conversion fix): the list update loop used to index achievements purely
+-- positionally (GetAchievementInfo(category, i + offset + completedOffset)) while the
+-- counts came from a separately computed GetCategoryNumAchievements pass. When the two
+-- diverged (nil completedOffset, stale pooled rows, changing visibility after an
+-- achievement was earned) the loop aborted mid-pass and every recycled button kept its
+-- previous binding -- showing the same achievement ("For the Alliance!") on every row.
+-- Each filter now also returns the CONCRETE ordered id list that the loop binds rows to,
+-- so the count and the data can never drift apart.
 function AchievementFrame_GetCategoryNumAchievements_All (categoryID)
-	local numAchievements, numCompleted = GetCategoryNumAchievements(categoryID);
+	local idList = Achiever_GetVisibleAchievementIdList(categoryID) or {};
+	local numAchievements = table.getn(idList);
+	local numCompleted = 0;
+	for _, id in next, idList do
+		if ( Achiever_IsAchievementCompleted(id) ) then numCompleted = numCompleted + 1; end
+	end
 
-	return numAchievements, numCompleted, 0;
+	return numAchievements, numCompleted, 0, idList;
 end
 
 function AchievementFrame_GetCategoryNumAchievements_Complete (categoryID)
-	local numAchievements, numCompleted = GetCategoryNumAchievements(categoryID);
+	local idList = Achiever_GetCompletedAchievementIdList(categoryID) or {};
+	local numCompleted = table.getn(idList);
 
-	return numCompleted, numCompleted, 0;
+	return numCompleted, numCompleted, 0, idList;
 end
 
 function AchievementFrame_GetCategoryNumAchievements_Incomplete (categoryID)
-	local numAchievements, numCompleted = GetCategoryNumAchievements(categoryID);
+	local idList = Achiever_GetIncompletedAchievementIdList(categoryID) or {};
 
-	return numAchievements - numCompleted, 0, numCompleted
+	return table.getn(idList), 0, 0, idList;
 end
 
 ACHIEVEMENTUI_SELECTEDFILTER = AchievementFrame_GetCategoryNumAchievements_All;
@@ -2050,10 +2090,13 @@ function AchievementFrameStats_Update ()
 	local scrollFrame = AchievementFrameStatsContainer;
 	local offset = HybridScrollFrame_GetOffset(scrollFrame);
 	local buttons = scrollFrame.buttons;
+	if ( not buttons ) then return; end
 	local numButtons = table.getn(buttons); -- #buttons;
 	local statHeight = 24;
 
+	offset = tonumber(offset) or 0;
 	local numStats, numCompleted = GetCategoryNumAchievements(category, true);
+	numStats = tonumber(numStats) or 0;
 	debug ('AchievementFrameStats_Update ' .. category .. ' '..numStats)
 	local categories = ACHIEVEMENTUI_CATEGORIES;
 
@@ -2068,31 +2111,31 @@ function AchievementFrameStats_Update ()
 		lastCategory = COMPARISON_STAT_FUNCTIONS.lastCategory
 	end
 
-	-- clear out table
-	if ( lastCategory ~= category ) then
-		local statCat;
-		for i in next, displayStatCategories do
-			displayStatCategories[i] = nil;
-		end
-		displayStatCategories = {}
+	-- clear out table on EVERY pass and rebuild it from the concrete visible-id
+	-- lists. The old code only rebuilt when lastCategory changed, so recycled rows
+	-- could keep binding to stale positional indices (every row showing the same
+	-- achievement) whenever the underlying data shifted underneath the cache.
+	for i in next, displayStatCategories do
+		displayStatCategories[i] = nil;
+	end
+	if ( category and category ~= "summary" ) then
 		-- build a list of shown category and stat id's
-
 		tinsert(displayStatCategories, {id = category, header = true});
-		for i=1, numStats do
-			tinsert(displayStatCategories, {id = GetAchievementInfo(category, i, true)});
+		for _, achID in next, Achiever_GetVisibleAchievementIdList(category, true) do
+			tinsert(displayStatCategories, {id = achID});
 		end
 		-- add all the subcategories and their stat id's
 		for i, cat in next, categories do
 			-- debug('~!!!!!!!!!!!!!!!!!!!!!!!! ' .. category .. ' ' .. (cat.parent or 'nil'))
 			if ( cat.parent == category ) then
 				tinsert(displayStatCategories, {id = cat.id, header = true});
-				numStats = GetCategoryNumAchievements(cat.id, true);
-				debug('AchievementFrameStats_Update HEADER ' .. numStats)
-				for k=1, numStats do
-					tinsert(displayStatCategories, {id = GetAchievementInfo(cat.id, k, true)});
+				for _, achID in next, Achiever_GetVisibleAchievementIdList(cat.id, true) do
+					tinsert(displayStatCategories, {id = achID});
 				end
 			end
 		end
+	end
+	if ( lastCategory ~= category ) then
 		if (USE_FUNCTIONS == 'ACHIEVEMENT_FUNCTIONS') then
 			ACHIEVEMENT_FUNCTIONS.lastCategory = category;
 		elseif (USE_FUNCTIONS == 'STAT_FUNCTIONS') then
@@ -2956,14 +2999,22 @@ function AchievementFrameComparison_Update ()
 
 	local offset = HybridScrollFrame_GetOffset(scrollFrame);
 	local buttons = scrollFrame.buttons;
-	local numAchievements, numCompleted = GetCategoryNumAchievements(category);
+	local displayAchievements = Achiever_GetVisibleAchievementIdList(category) or {};
+	local numAchievements = table.getn(displayAchievements);
 	local numButtons = table.getn(buttons); -- #buttons;
 
+	offset = tonumber(offset) or 0;
 	local achievementIndex;
 	local buttonHeight = buttons[1]:GetHeight();
 	for i = 1, numButtons do
 		achievementIndex = i + offset;
-		AchievementFrameComparison_DisplayAchievement(buttons[i], category, achievementIndex);
+		if ( displayAchievements[achievementIndex] ) then
+			AchievementFrameComparison_DisplayAchievement(buttons[i], category, achievementIndex);
+		else
+			-- unbind pooled rows that have no data so they cannot render a stale entry
+			buttons[i].id = nil;
+			buttons[i]:Hide();
+		end
 	end
 
 	HybridScrollFrame_Update(scrollFrame, buttonHeight*numAchievements, buttonHeight*numButtons);
@@ -3062,7 +3113,7 @@ function AchievementFrameComparison_UpdateStats ()
 	local scrollFrame = AchievementFrameComparisonStatsContainer;
 	local offset = HybridScrollFrame_GetOffset(scrollFrame);
 	local buttons = scrollFrame.buttons;
-	local numButtons = table.getn(buttonss); -- #buttons;
+	local numButtons = table.getn(buttons); -- #buttons;
 	local headerHeight = 24;
 	local statHeight = 24;
 	local totalHeight = 0;
