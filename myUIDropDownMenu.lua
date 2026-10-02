@@ -1,4 +1,4 @@
-local _G, _ = _G or getfenv()
+local _G = _G
 
 local function debug(msg)
 	-- DEFAULT_CHAT_FRAME:AddMessage('|cffc663fcDEBUG: |cffff55ff'.. (msg or 'nil'))
@@ -438,17 +438,19 @@ function myUIDropDownMenu_AddButton(info, level)
 	button:SetPoint("TOPLEFT", button:GetParent(), "TOPLEFT", xPos, yPos);
 
 	-- See if button is selected by id or name
+	-- WoW 1.14 compat: read the frame fields directly instead of relying on
+	-- undefined Blizzard globals (UIDropDownMenu_GetSelectedName/ID/Value).
 	if ( frame ) then
-		if ( UIDropDownMenu_GetSelectedName(frame) ) then
-			if ( button:GetText() == UIDropDownMenu_GetSelectedName(frame) ) then
+		if ( frame.selectedName ) then
+			if ( button:GetText() == frame.selectedName ) then
 				info.checked = 1;
 			end
-		elseif ( UIDropDownMenu_GetSelectedID(frame) ) then
-			if ( button:GetID() == UIDropDownMenu_GetSelectedID(frame) ) then
+		elseif ( frame.selectedID ) then
+			if ( button:GetID() == frame.selectedID ) then
 				info.checked = 1;
 			end
-		elseif ( UIDropDownMenu_GetSelectedValue(frame) ) then
-			if ( button.value == UIDropDownMenu_GetSelectedValue(frame) ) then
+		elseif ( frame.selectedValue ) then
+			if ( button.value == frame.selectedValue ) then
 				info.checked = 1;
 			end
 		end

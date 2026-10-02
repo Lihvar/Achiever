@@ -1,4 +1,4 @@
-local _G, _ = _G or getfenv()
+local _G = _G
 
 ACHIEVER_ADDON_NAME = 'Achiever'
 local ACHIEVER_ADDON_VERSION = '0.0.2.0'
@@ -76,7 +76,7 @@ Achiever.hookChatFrame = function(self, frame)
                 self:processServerMessage(message)
                 return false --hide this message
             end
-            original(t, message, unpack(arg))
+            original(t, message, ...)
         end
     else
         warn('failed to hook non-chat frame.')
@@ -381,7 +381,8 @@ end
 
 
 
-Achiever:SetScript("OnEvent", function()
+Achiever:SetScript("OnEvent", function(self, event, ...)
+    local arg1 = ...
     if (not event) then
         warn('OnEvent with no event')
 		return
@@ -407,6 +408,7 @@ BINDING_HEADER_ACHIEVER = "Achiever";
 BINDING_NAME_TOGGLEACHIEVEMENTS = "Show Achievements";
 
 function AchievementsMicroButton_OnLoad()
+    local this = AchievementsMicroButton;
     this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
     this:RegisterEvent("PLAYER_LEVEL_UP");
     this:RegisterEvent("UPDATE_BINDINGS");
@@ -426,6 +428,8 @@ function AchievementsMicroButton_OnLoad()
 end
 
 function AchievementsMicroButton_OnEvent()
+    local this = AchievementsMicroButton;
+    local event = ... or _G.event;
     if ( event == "PLAYER_LEVEL_UP" ) then
         UpdateAchievementsButton();
     elseif ( event == "UNIT_LEVEL" or event == "PLAYER_ENTERING_WORLD" ) then

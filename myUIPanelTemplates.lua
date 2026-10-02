@@ -1,5 +1,5 @@
 
-local _G, _ = _G or getfenv()
+local _G = _G
 
 local function debug(msg)
 	-- DEFAULT_CHAT_FRAME:AddMessage('|cffc663fcDEBUG: |cffff55ff'.. (msg or 'nil'))

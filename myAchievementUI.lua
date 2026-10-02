@@ -1,4 +1,4 @@
-local _G, _ = _G or getfenv()
+local _G = _G
 
 local ACHIEVER_ADDON_DEBUG = false
 
@@ -178,14 +178,12 @@ ACHIEVEMENT_FILTER_INCOMPLETE = 3;
 local FEAT_OF_STRENGTH_ID = 81;
 
 local trackedAchievements = {};
-local function updateTrackedAchievements (list)
-	-- local count = arg.n; --select("#", ...);
-	local count = table.getn(list)
+local function updateTrackedAchievements (...)
+	local list = {...};
+	local count = select("#", ...);
 	debug('updateTrackedAchievements ' .. count)
-	if (count > 0) then
-		for i = 1, count do
-			trackedAchievements[select(i, arg)] = true;
-		end
+	for i = 1, count do
+		trackedAchievements[list[i]] = true;
 	end
 end
 
@@ -341,6 +339,8 @@ ACHIEVEMENTFRAME_SUBFRAMES = {
 
 function AchievementFrame_ShowSubFrame(...)
 	local subFrame, show;
+	local arg = {...};
+	arg.n = select("#", ...);
 	for _, name in next, ACHIEVEMENTFRAME_SUBFRAMES  do
 		subFrame = _G[name];
 		show = false;
@@ -368,7 +368,8 @@ function AchievementFrameCategories_OnLoad (self)
 	-- self:SetScript("OnEvent", AchievementFrameCategories_OnEvent);
 end
 
-function AchievementFrameCategories_OnEvent()
+function AchievementFrameCategories_OnEvent(self, event, ...)
+	local arg1 = ...;
 	if ( event == "ADDON_LOADED" ) then
 		local addonName = arg1
 		if ( addonName and addonName ~= ACHIEVER_ADDON_NAME ) then
@@ -916,7 +917,7 @@ function AchievementFrameAchievements_OnEvent (self, event, ...)
 
 		updateTrackedAchievements(GetTrackedAchievements());
 	elseif ( event == "ACHIEVEMENT_EARNED" ) then
-		local achievementID = arg;
+		local achievementID = ...;
 		AchievementFrameCategories_Update();
 		AchievementFrameCategories_UpdateTooltip();
 		-- This has to happen before AchievementFrameAchievements_ForceUpdate() in order to achieve the behavior we want, since it clears the selection for progressive achievements.
@@ -2282,7 +2283,9 @@ function AchievementFrameSummary_Update(isCompare)
 end
 
 function AchievementFrameSummary_UpdateAchievements(...)
-	local numAchievements = arg.n; -- select("#", ...);
+	local arg = {...};
+	arg.n = select("#", ...);
+	local numAchievements = arg.n;
 	debug('AchievementFrameSummary_UpdateAchievements ' .. numAchievements)
 	local id, name, points, completed, month, day, year, description, flags, icon;
 	local buttons = AchievementFrameSummaryAchievements.buttons;
@@ -2897,7 +2900,7 @@ function AchievementFrameComparison_OnEvent (self, event, ...)
 		end
 		AchievementFrameComparison_UpdateStatusBars(selectedCategory)
 	elseif ( event == "UNIT_PORTRAIT_UPDATE" ) then
-		local updateUnit = arg;
+		local updateUnit = ...;
 		if ( updateUnit and updateUnit == AchievementFrameComparisonHeaderPortrait.unit and UnitName(updateUnit) == AchievementFrameComparisonHeaderName:GetText() ) then
 			SetPortraitTexture(AchievementFrameComparisonHeaderPortrait, updateUnit);
 		end

@@ -1,4 +1,4 @@
-local _G, _ = _G or getfenv()
+local _G = _G
 local function warn(msg)
 	DEFAULT_CHAT_FRAME:AddMessage('|cf3f3f66cWARN: |cffff55ff'.. (msg or 'nil'))
 end
@@ -195,6 +195,7 @@ function AchievementAlertFrame_OnHide (self)
 end
 
 function AchievementAlertFrame_OnUpdate(self)
+        local this = self;
 	local newFrameTime = GetTime()
 	local elapsed = newFrameTime - this.oldFrameTime
 	this.oldFrameTime = newFrameTime
