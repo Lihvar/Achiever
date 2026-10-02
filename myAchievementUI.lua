@@ -573,7 +573,11 @@ function AchievementFrameCategories_DisplayButton (button, element)
 		button.background:SetVertexColor(0.6, 0.6, 0.6);
 	else
 		button:SetWidth(ACHIEVEMENTUI_CATEGORIESWIDTH - 10);
-		button.label:SetFontObject("GameFontNormal");
+		-- "GameFontNormal" is a virtual font in this addon's XML (only redefined
+		-- locally on some clients); passing the string can error out with
+		-- "Font object not found", aborting category rendering. Prefer the live
+		-- global font object when it exists.
+		button.label:SetFontObject(GameFontNormal or "GameFontNormal");
 		button.parentID = element.parent;
 		button.background:SetVertexColor(1, 1, 1);
 	end
@@ -1237,6 +1241,10 @@ function AchievementButton_OnLoad (self)
 	local name = self:GetName();
 	self.mouseOver = false
 	self.label = _G[name .. "Label"];
+	-- The XML template ships with default text ("For the Alliance!"). Clear it
+	-- immediately so a recycled/unbound row can never show that stale string;
+	-- rows only get text once AchievementButton_DisplayAchievement binds an id.
+	self.label:SetText("");
 	self.description = _G[name .. "Description"];
 	self.hiddenDescription = _G[name .. "HiddenDescription"];
 	self.reward = _G[name .. "Reward"];
