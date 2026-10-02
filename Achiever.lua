@@ -427,9 +427,11 @@ function AchievementsMicroButton_OnLoad()
     this.newbieText = NEWBIE_TOOLTIP_ACHIEVEMENT;
 end
 
-function AchievementsMicroButton_OnEvent()
+function AchievementsMicroButton_OnEvent(self, event, ...)
     local this = AchievementsMicroButton;
-    local event = ... or _G.event;
+    if ( not event ) then
+        event = _G.event;
+    end
     if ( event == "PLAYER_LEVEL_UP" ) then
         UpdateAchievementsButton();
     elseif ( event == "UNIT_LEVEL" or event == "PLAYER_ENTERING_WORLD" ) then
