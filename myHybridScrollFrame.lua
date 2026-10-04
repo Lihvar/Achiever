@@ -1,4 +1,3 @@
-local _G, _ = _G or getfenv()
 --[[-----------------------------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------------------------]]--
@@ -12,16 +11,16 @@ end
 
 local round = function (num) return math.floor(num + .5); end
 
-function HybridScrollFrame_OnLoad (self)
+function myHybridScrollFrame_OnLoad (self)
 	self:EnableMouse(true);
 end
 
-function HybridScrollFrame_OnValueChanged (self, value)
-	HybridScrollFrame_SetOffset(self, value);
-	HybridScrollFrame_UpdateButtonStates(self, value);
+function myHybridScrollFrame_OnValueChanged (self, value)
+	myHybridScrollFrame_SetOffset(self, value);
+	myHybridScrollFrame_UpdateButtonStates(self, value);
 end
 
-function HybridScrollFrame_UpdateButtonStates(self, currValue)
+function myHybridScrollFrame_UpdateButtonStates(self, currValue)
 	if ( not currValue ) then
 		currValue = self.scrollBar:GetValue();
 	end
@@ -50,7 +49,7 @@ function HybridScrollFrame_UpdateButtonStates(self, currValue)
 	end
 end
 
-function HybridScrollFrame_OnMouseWheel (self, delta, stepSize)
+function myHybridScrollFrame_OnMouseWheel (self, delta, stepSize)
 	if ( not self.scrollBar:IsVisible() ) then
 		return;
 	end
@@ -64,33 +63,33 @@ function HybridScrollFrame_OnMouseWheel (self, delta, stepSize)
 	end
 end
 
-function HybridScrollFrameScrollButton_OnUpdate (self, elapsed)
+function myHybridScrollFrameScrollButton_OnUpdate (self, elapsed)
 	self.timeSinceLast = self.timeSinceLast + elapsed;
 	if ( self.timeSinceLast >= ( self.updateInterval or 0.08 ) ) then
 		if ( not IsMouseButtonDown("LeftButton") ) then
 			self:SetScript("OnUpdate", nil);
 		elseif ( self:IsMouseOver() ) then
 			local parent = self.parent or self:GetParent():GetParent();
-			HybridScrollFrame_OnMouseWheel (parent, self.direction, (self.stepSize or parent.buttonHeight/3));
+			myHybridScrollFrame_OnMouseWheel (parent, self.direction, (self.stepSize or parent.buttonHeight/3));
 			self.timeSinceLast = 0;
 		end
 	end
 end
 
-function HybridScrollFrameScrollButton_OnClick (self, button, down)
+function myHybridScrollFrameScrollButton_OnClick (self, button, down)
 	local parent = self.parent or self:GetParent():GetParent();
 
 	if ( down ) then
 		self.timeSinceLast = (self.timeToStart or -0.2);
-		self:SetScript("OnUpdate", HybridScrollFrameScrollButton_OnUpdate);
-		HybridScrollFrame_OnMouseWheel (parent, self.direction);
-		PlaySound("UChatScrollButton");
+		self:SetScript("OnUpdate", myHybridScrollFrameScrollButton_OnUpdate);
+		myHybridScrollFrame_OnMouseWheel (parent, self.direction);
+		Achiever_PlaySound("UChatScrollButton");
 	else
 		self:SetScript("OnUpdate", nil);
 	end
 end
 
-function HybridScrollFrame_Update (self, totalHeight, displayedHeight)
+function myHybridScrollFrame_Update (self, totalHeight, displayedHeight)
 	local range = totalHeight - self:GetHeight();
 	if ( range > 0 and self.scrollBar ) then
 		local minVal, maxVal = self.scrollBar:GetMinMaxValues();
@@ -99,16 +98,16 @@ function HybridScrollFrame_Update (self, totalHeight, displayedHeight)
 			if ( math.floor(self.scrollBar:GetValue()) ~= math.floor(range) ) then
 				self.scrollBar:SetValue(range);
 			else
-				HybridScrollFrame_SetOffset(self, range); -- If we've scrolled to the bottom, we need to recalculate the offset.
+				myHybridScrollFrame_SetOffset(self, range); -- If we've scrolled to the bottom, we need to recalculate the offset.
 			end
 		else
 			self.scrollBar:SetMinMaxValues(0, range)
 		end
 
-		-- warn('HybridScrollFrame_Update Enable no working')
+		-- warn('myHybridScrollFrame_Update Enable no working')
 		-- self.scrollBar:Enable();
 
-		HybridScrollFrame_UpdateButtonStates(self);
+		myHybridScrollFrame_UpdateButtonStates(self);
 		self.scrollBar:Show();
 	elseif ( self.scrollBar ) then
 		self.scrollBar:SetValue(0);
@@ -127,26 +126,26 @@ function HybridScrollFrame_Update (self, totalHeight, displayedHeight)
 	self:UpdateScrollChildRect();
 end
 
-function HybridScrollFrame_GetOffset (self)
+function myHybridScrollFrame_GetOffset (self)
 	return math.floor(self.offset or 0), (self.offset or 0);
 end
 
-function HybridScrollFrameScrollChild_OnLoad (self)
+function myHybridScrollFrameScrollChild_OnLoad (self)
 	self:GetParent().scrollChild = self;
 end
 
-function HybridScrollFrame_ExpandButton (self, offset, height)
+function myHybridScrollFrame_ExpandButton (self, offset, height)
 	self.largeButtonTop = round(offset);
 	self.largeButtonHeight = round(height)
-	HybridScrollFrame_SetOffset(self, self.scrollBar:GetValue());
+	myHybridScrollFrame_SetOffset(self, self.scrollBar:GetValue());
 end
 
-function HybridScrollFrame_CollapseButton (self)
+function myHybridScrollFrame_CollapseButton (self)
 	self.largeButtonTop = nil;
 	self.largeButtonHeight = nil;
 end
 
-function HybridScrollFrame_SetOffset (self, offset)
+function myHybridScrollFrame_SetOffset (self, offset)
 	local buttons = self.buttons
 	local buttonHeight = self.buttonHeight;
 	local element, overflow;
@@ -186,8 +185,8 @@ function HybridScrollFrame_SetOffset (self, offset)
 	self:SetVerticalScroll(scrollHeight);
 end
 
-function HybridScrollFrame_CreateButtons (self, buttonTemplate, initialOffsetX, initialOffsetY, initialPoint, initialRelative, offsetX, offsetY, point, relativePoint)
-	debug('HybridScrollFrame_CreateButtons' .. self:GetName() .. ' ' .. buttonTemplate .. ' ')
+function myHybridScrollFrame_CreateButtons (self, buttonTemplate, initialOffsetX, initialOffsetY, initialPoint, initialRelative, offsetX, offsetY, point, relativePoint)
+	debug('myHybridScrollFrame_CreateButtons' .. self:GetName() .. ' ' .. buttonTemplate .. ' ')
 	local scrollChild = self.scrollChild;
 	local button, buttonHeight, buttons, numButtons;
 
@@ -215,7 +214,7 @@ function HybridScrollFrame_CreateButtons (self, buttonTemplate, initialOffsetX, 
 
 	local numButtons = math.ceil(self:GetHeight() / buttonHeight) + 1;
 
-	local buttonCount = table.getn(buttons)
+	local buttonCount = #buttons
 	for i = buttonCount + 1, numButtons do
 		button = CreateFrame("BUTTON", buttonName .. i, scrollChild, buttonTemplate);
 		button:SetPoint(point, buttons[i-1], relativePoint, offsetX, offsetY);

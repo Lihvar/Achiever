@@ -1,4 +1,3 @@
-local _G, _ = _G or getfenv()
 local function debug(msg)
 	-- DEFAULT_CHAT_FRAME:AddMessage('|cffc663fcDEBUG: |cffff55ff'.. (msg or 'nil'))
 end
@@ -40,7 +39,7 @@ ACHIEVEMENT_CRITERIA_FLAG_MONEY_COUNTER = 32;
 
 
 local function IsAchievementCompleted(id)
-    local achievementCompletion = achieverDBpc.achievements[tonumber(id)]
+    local achievementCompletion = achieverDBpc.achievements and achieverDBpc.achievements[tonumber(id)]
     local completed = false
     if (achievementCompletion) then
         completed = true;
@@ -60,13 +59,15 @@ end
 
 local function IsAchievementVisible(id, includeAll)
     if (not id) then return false end
-    if (includeAll) then return true end
+    if (includeAll) then return achieverDB.achievements.data[id] ~= nil end
     if (IsAchievementCompleted(id)) then
         local nextId = GetNextID(id)
         if (not nextId) then return true end
         return not IsAchievementCompleted(nextId)
     end
-    if (achieverDB.achievements.data[id].points == 0) then return false end
+    local achievement = achieverDB.achievements.data[id]
+    if (not achievement) then return false end
+    if (achievement.points == 0) then return false end
     local previousId = GetPreviousID(id)
     if (not previousId) then return true end
     return IsAchievementCompleted(previousId)
@@ -88,7 +89,8 @@ local function GetAchievement(achievementId)
 end
 
 local function GetAchievementCompletionTime(achievementId)
-    return achieverDBpc.achievements[achievementId].date;
+    local completion = achieverDBpc.achievements[achievementId]
+    return completion and completion.date or time();
 end
 
 -- id, name, points, completed, month, day, year, description, flags, icon, rewardText, isGuild, wasEarnedByMe, earnedBy = GetAchievementInfo(achievementID or categoryID, index)
@@ -122,12 +124,12 @@ function GetAchievementInfo(id, index, includeAll)
         local category = GetCategory(id)
         if (category) then
             local achs = {}
-            for _, aid in pairs(achieverDB.achievements.byCategory[tonumber(id)]) do
+            for _, aid in pairs(achieverDB.achievements.byCategory[tonumber(id)] or {}) do
                 if IsAchievementVisible(aid, all) then
                     table.insert(achs, GetAchievement(aid))
                 end
             end
-            if index <= getn(achs) then
+            if index <= #achs then
                 table.sort(achs, function(a, b)
                     local completedA, completedB = IsAchievementCompleted(a.id), IsAchievementCompleted(b.id)
                     if (completedA and completedB) then return defaultAchievementOrderComparator(a, b) end
@@ -152,11 +154,11 @@ function GetAchievementInfo(id, index, includeAll)
         local completed, earnedBy = false, nil
         local month, day, year
         local reward = ''
-        if (ach.titleReward ~= '0') then reward = ach.titleReward; end
+        if (ach.titleReward and ach.titleReward ~= '0') then reward = ach.titleReward; end
         if (IsAchievementCompleted(ach.id)) then
             debug('GetAchievementInfo '.. ach.id)
-            local time = GetAchievementCompletionTime(ach.id)
-            month, day, year = tonumber(date('%m', time)), tonumber(date('%d', time)), tonumber(date('%y', time))
+            local completedAt = GetAchievementCompletionTime(ach.id)
+            month, day, year = tonumber(date('%m', completedAt)), tonumber(date('%d', completedAt)), tonumber(date('%y', completedAt))
             -- local month, day, year = playerAch.month, playerAch.day, playerAch.year
             completed, earnedBy = true, UnitName('player')
 
@@ -166,11 +168,23 @@ function GetAchievementInfo(id, index, includeAll)
     return 1, 'INVALID ACHIEVEMENT', 0, false, nil, nil, nil, '', 0, 0, '', false, false, '', false
 end
 
+-- Category 1 is the Statistics root: it and everything below it belongs to the Statistics tab.
+local function IsStatisticsCategory(id)
+    local category = achieverDB.categories.data[id]
+    local guard = 0
+    while (category and guard < 10) do
+        if (category.id == 1 or category.parentId == 1) then return true end
+        category = achieverDB.categories.data[category.parentId]
+        guard = guard + 1
+    end
+    return false
+end
+
 function GetCategoryList()
     local result = {}
 
     for id, v in pairs(achieverDB.categories.data) do
-        if (id ~= 1 and v.parentId ~= 1) then
+        if (not IsStatisticsCategory(id)) then
             table.insert(result, id)
         end
     end
@@ -187,7 +201,7 @@ function GetStatistic(id)
         for k, v in pairs(criteriaIdList) do
             local cCriteria = achieverDBpc.criteria[v]
             if (cCriteria) then
-                value = value + achieverDBpc.criteria[v].counter
+                value = value + (cCriteria.counter or 0)
             end
         end
     end
@@ -197,7 +211,7 @@ end
 
 function GetStatisticsCategoryList()
     local result = {}
-    local rootStatCategoryIdList = achieverDB.categories.byParent['1'];
+    local rootStatCategoryIdList = achieverDB.categories.byParent['1'] or {};
     for i, v in pairs(rootStatCategoryIdList) do
         table.insert(result, v)
         local subStatCategoryIdList = achieverDB.categories.byParent[tostring(v)];
@@ -235,7 +249,7 @@ function GetCategoryNumAchievements(categoryID, includeAll, completion)
     if (category) then
         local achievements = achieverDB.achievements.byCategory[category.id]
         if (achievements) then
-            -- debug('GetCategoryNumAchievements ' .. table.getn(achievements))
+            -- debug('GetCategoryNumAchievements ' .. #achievements)
             for _, aid in pairs(achievements) do
                 if (IsAchievementVisible(aid, includeAll)) then
                     total = total + 1
@@ -271,7 +285,8 @@ function GetNumCompletedAchievements(inGuildView)
     local total = 0;
     for id, v in pairs(achieverDB.achievements.data) do
         local achievement = achieverDB.achievements.data[id];
-        if (achievement and achievement.categoryId ~= 1 and achievement.points > 0 and not (bit.band(achievement.flags, ACHIEVEMENT_FLAGS_HIDDEN) == ACHIEVEMENT_FLAGS_HIDDEN) and not (bit.band(achievement.flags, ACHIEVEMENT_FLAGS_STATISTIC) == ACHIEVEMENT_FLAGS_STATISTIC)) then
+        local flags = achievement and achievement.flags or 0
+        if (achievement and achievement.categoryId ~= 1 and (achievement.points or 0) > 0 and not (bit.band(flags, ACHIEVEMENT_FLAGS_HIDDEN) == ACHIEVEMENT_FLAGS_HIDDEN) and not (bit.band(flags, ACHIEVEMENT_FLAGS_STATISTIC) == ACHIEVEMENT_FLAGS_STATISTIC)) then
             total = total + 1
         end
     end
@@ -286,7 +301,8 @@ end
 function GetTotalAchievementPoints(inGuildView)
     local points = 0
     for id, _ in pairs(achieverDBpc.achievements) do
-        points = points + achieverDB.achievements.data[id].points
+        local achievement = achieverDB.achievements.data[id]
+        if (achievement) then points = points + (achievement.points or 0) end
     end
     return points
 end
@@ -309,7 +325,7 @@ function GetLatestCompletedAchievements(inGuildView)
     if (count == 0) then return end
     if (count == 1) then return completedAchievemenIdHash[1] end
     table.sort(completedAchievemenIdHash, function(a, b)
-        local delta = achieverDBpc.achievements[a].date - achieverDBpc.achievements[b].date
+        local delta = (achieverDBpc.achievements[a].date or 0) - (achieverDBpc.achievements[b].date or 0)
         if (delta ~= 0) then return delta > 0 end
         return a > b
     end)
@@ -419,34 +435,41 @@ function getTextGSC(money, exact, dontUseColorCodes)
     return gsc
 end
 
+-- Criteria are stored as byAchievement[achievementId][order] = criteriaId. The UI asks for 1..N, so
+-- resolve "n-th criteria" through the sorted order keys: gaps (or a 0-based order) do not break it.
+local function GetCriteriaIdByIndex(achievementID, index)
+    local list = achieverDB.criteria.byAchievement[achievementID]
+    if (not list) then return nil end
+    local orders = {}
+    for order in pairs(list) do orders[#orders + 1] = order end
+    table.sort(orders)
+    local order = orders[index]
+    return order ~= nil and list[order] or nil
+end
+
 -- criteriaString, criteriaType, completed, quantity, reqQuantity,
 --  charName, flags, assetID, quantityString, criteriaID, eligible =
 --    GetAchievementCriteriaInfo(achievementID, criteriaIndex [, countHidden])
 function GetAchievementCriteriaInfo(achievementID, criteriaIndex)
 
-    local pCriteria = nil
-    local criteria = nil
+    local INVALID = { 'INVALID CRITERIA', 0, false, 0, 0, '', 0, 0, '', 0 }
     local criteriaIdList = achieverDB.criteria.byAchievement[achievementID]
-    local criteriaID = nil
-    if (criteriaIdList) then
-        criteriaId = criteriaIdList[criteriaIndex]
-        if (criteriaId) then
-            criteria = achieverDB.criteria.data[criteriaId]
-            pCriteria = achieverDBpc.criteria[criteriaId]
-        end
-        if (not criteriaId or not criteria) then
-            return 'INVALID CRITERIA', 0, false, 0, 0, '', 0, 0, '', 0
-        end
-    end
+    if (not criteriaIdList) then return unpack(INVALID) end
+
+    -- statistics ask with only the id: they have a single criteria
+    local criteriaId = GetCriteriaIdByIndex(achievementID, criteriaIndex or 1)
+    local criteria = criteriaId and achieverDB.criteria.data[criteriaId]
+    if (not criteria) then return unpack(INVALID) end
+    local pCriteria = achieverDBpc.criteria and achieverDBpc.criteria[criteriaId]
 
     local name = criteria.name
     local criteriaType = criteria.type
     local quantity = 0
-    local reqQuantity = criteria.count
+    local reqQuantity = criteria.count or 0
     local completed = false
     local charName = UnitName('player')
     local quantityString = ''
-    local flags = criteria.flags
+    local flags = criteria.flags or 0
     local assetId = criteria.assetId
 
     -- Fix achievement criterias not showing as completed
@@ -454,31 +477,19 @@ function GetAchievementCriteriaInfo(achievementID, criteriaIndex)
         reqQuantity = 1
     end
 
-    if (criteria) then
-        if (pCriteria) then
-            quantity = pCriteria.counter
-        else
-            quantity = 0
-        end
-        completed = pCriteria and reqQuantity == quantity
-        quantityString = quantity .. ' / ' .. reqQuantity
+    if (pCriteria) then
+        quantity = pCriteria.counter or 0
     end
+    completed = (pCriteria ~= nil) and reqQuantity == quantity
+    quantityString = quantity .. ' / ' .. reqQuantity
 
     if ( bit.band(flags, ACHIEVEMENT_CRITERIA_FLAG_MONEY_COUNTER) == ACHIEVEMENT_CRITERIA_FLAG_MONEY_COUNTER ) then
         quantityString = getTextGSC(quantity, true, false)
         quantityString = quantityString .. ' / ' .. getTextGSC(reqQuantity, true, false)
     end
 
-    return name, criteriaType, completed, quantity, reqQuantity, charName, flags, assedId, quantityString, criteriaId
-    -- local achievement = GetAchievement(achievementID)
-    -- if (achievement) then
-    --     local criterias = achievement:GetCriteriasSorted()
-    --     local criteriaCount = table.getn(criterias)
-    --     if (criteriaIndex <= criteriaCount) then
-    --         return _GetAchievementCriteria(achievementID, criterias[criteriaIndex])
-    --     end
-    -- end
-    -- return _GetAchievementCriteria()
+    -- assetId is what lets the UI show meta achievements (criteria type 8 = another achievement)
+    return name, criteriaType, completed, quantity, reqQuantity, charName, flags, assetId, quantityString, criteriaId
 end
 
 function GetAchievementCriteriaInfoByID(achievementID, criteriaID)
@@ -569,9 +580,16 @@ function SetAchievementSearchString(text)
 end
 
 function GetNumFilteredAchievements()
-    return table.getn(lastSearchResult)
+    return #lastSearchResult
 end
 
 function GetFilteredAchievementID(index)
     return lastSearchResult[index].id
 end
+
+-- Stubs so the UI does not throw when it reaches features that are not implemented yet
+-- (tracking / comparison; see README TODO). Real implementations, if present, win.
+if not AddTrackedAchievement then function AddTrackedAchievement() end end
+if not RemoveTrackedAchievement then function RemoveTrackedAchievement() end end
+if not GetComparisonStatistic then function GetComparisonStatistic() return "--" end end
+if not GetAchievementInfoFromCriteria then function GetAchievementInfoFromCriteria() end end

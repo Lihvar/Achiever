@@ -1,7 +1,7 @@
-## Interface: 11200
+## Interface: 11402
 ## Title: Achiever|cFF00FF00 v0.2|r by |cFF00FF00TsAah|r
 ## Author: TsAah
-## Notes: Achievements UI for WoW 1.12
+## Notes: Achievements UI for WoW Classic Era 1.14 (ported from 1.12)
 ## Version: 0.2
 ## X-Category: Interface Enhancements
 ## SavedVariables: achieverDB, achieverDBalliance, achieverDBhorde
@@ -13,15 +13,13 @@ Achiever.lua
 Achiever.xml
 iconTable.lua
 api.lua
-myAlertFrames.lua
-myAlertFrames.xml
 myUIPanelTemplates.lua
-myUIPanelTemplates.xml
 myUIDropDownMenu.lua
-myUIDropDownMenu.xml
 myUIDropDownMenuTemplates.xml
+myUIDropDownMenu.xml
 myHybridScrollFrame.lua
 myHybridScrollFrame.xml
 myAchievementUI.lua
 myAchievementUI.xml
-
+myAlertFrames.lua
+myAlertFrames.xml

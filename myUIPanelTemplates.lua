@@ -1,5 +1,4 @@
 
-local _G, _ = _G or getfenv()
 
 local function debug(msg)
 	-- DEFAULT_CHAT_FRAME:AddMessage('|cffc663fcDEBUG: |cffff55ff'.. (msg or 'nil'))
@@ -25,11 +24,11 @@ function myPanelTemplates_UpdateTabs(frame)
 		for i=1, frame.numTabs, 1 do
 			tab = _G[frame:GetName().."Tab"..i];
 			if ( tab.isDisabled ) then
-				PanelTemplates_SetDisabledTabState(tab);
+				myPanelTemplates_SetDisabledTabState(tab);
 			elseif ( i == frame.selectedTab ) then
-				PanelTemplates_SelectTab(tab);
+				myPanelTemplates_SelectTab(tab);
 			else
-				PanelTemplates_DeselectTab(tab);
+				myPanelTemplates_DeselectTab(tab);
 			end
 		end
 	end
@@ -121,7 +120,7 @@ end
 -- 	PanelTemplates_UpdateTabs(frame);
 -- end
 
-function PanelTemplates_DeselectTab(tab)
+function myPanelTemplates_DeselectTab(tab)
 	local name = tab:GetName();
 	_G[name.."Left"]:Show();
 	_G[name.."Middle"]:Show();
@@ -133,7 +132,7 @@ function PanelTemplates_DeselectTab(tab)
 	_G[name.."RightDisabled"]:Hide();
 end
 
-function PanelTemplates_SelectTab(tab)
+function myPanelTemplates_SelectTab(tab)
 	local name = tab:GetName();
 	_G[name.."Left"]:Hide();
 	_G[name.."Middle"]:Hide();
@@ -150,7 +149,7 @@ function PanelTemplates_SelectTab(tab)
 	end
 end
 
-function PanelTemplates_SetDisabledTabState(tab)
+function myPanelTemplates_SetDisabledTabState(tab)
 	local name = tab:GetName();
 	_G[name.."Left"]:Show();
 	_G[name.."Middle"]:Show();
@@ -402,7 +401,7 @@ end
 -- function EditBox_HandleTabbing(self, tabList)
 -- 	local editboxName = self:GetName();
 -- 	local index;
--- 	local tabListSize = table.getn(tabList)
+-- 	local tabListSize = #tabList
 -- 	for i=1, tabListSize do
 -- 		if ( editboxName == tabList[i] ) then
 -- 			index = i;
@@ -415,7 +414,7 @@ end
 -- 		index = index + 1;
 -- 	end
 
--- 	tabListSize = table.getn(tabList)
+-- 	tabListSize = #tabList
 -- 	if ( index == 0 ) then
 -- 		index = tabListSize;
 -- 	elseif ( index > tabListSize ) then

@@ -1,5 +1,4 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-..\FrameXML\UI.xsd">
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 	<!-- <Font name="SystemFont_Shadow_Small" font="Fonts\FRIZQT__.TTF" virtual="true">
 		<Shadow>
 			<Offset>
@@ -77,18 +76,16 @@
 				<Scripts>
 					<OnClick>
 						CloseMenus();
-						myUIDropDownMenuButton_OpenColorPicker(this:GetParent());
+						myUIDropDownMenuButton_OpenColorPicker(self:GetParent());
 					</OnClick>
 					<OnEnter>
-						local _G, _ = _G or getfenv()
-						myCloseDropDownMenus(this:GetParent():GetParent():GetID() + 1);
-						_G[this:GetName().."SwatchBg"]:SetVertexColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-						myUIDropDownMenu_StopCounting(this:GetParent():GetParent());
+						myCloseDropDownMenus(self:GetParent():GetParent():GetID() + 1);
+						_G[self:GetName().."SwatchBg"]:SetVertexColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+						myUIDropDownMenu_StopCounting(self:GetParent():GetParent());
 					</OnEnter>
 					<OnLeave>
-						local _G, _ = _G or getfenv()
-						_G[this:GetName().."SwatchBg"]:SetVertexColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-						myUIDropDownMenu_StartCounting(this:GetParent():GetParent());
+						_G[self:GetName().."SwatchBg"]:SetVertexColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+						myUIDropDownMenu_StartCounting(self:GetParent():GetParent());
 					</OnLeave>
 				</Scripts>
 				<NormalTexture name="$parentNormalTexture" file="Interface\ChatFrame\ChatFrameColorSwatch"/>
@@ -106,19 +103,18 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						myToggleDropDownMenu(this:GetParent():GetParent():GetID() + 1, this:GetParent().value, nil, nil, nil, nil, this:GetParent().menuList, this);
+						myToggleDropDownMenu(self:GetParent():GetParent():GetID() + 1, self:GetParent().value, nil, nil, nil, nil, self:GetParent().menuList, self);
 					</OnClick>
 					<OnEnter>
-						local _G, _ = _G or getfenv()
-						local level =  this:GetParent():GetParent():GetID() + 1;
-						local listFrame = _G["DropDownList"..level];
-						if ( not listFrame or not listFrame:IsShown() or select(2, listFrame:GetPoint()) ~= this ) then
-							myToggleDropDownMenu(level, this:GetParent().value, nil, nil, nil, nil, this:GetParent().menuList, this);
+						local level =  self:GetParent():GetParent():GetID() + 1;
+						local listFrame = _G["myDropDownList"..level];
+						if ( not listFrame or not listFrame:IsShown() or select(2, listFrame:GetPoint()) ~= self ) then
+							myToggleDropDownMenu(level, self:GetParent().value, nil, nil, nil, nil, self:GetParent().menuList, self);
 						end
-						myUIDropDownMenu_StopCounting(this:GetParent():GetParent());
+						myUIDropDownMenu_StopCounting(self:GetParent():GetParent());
 					</OnEnter>
 					<OnLeave>
-						myUIDropDownMenu_StartCounting(this:GetParent():GetParent());
+						myUIDropDownMenu_StartCounting(self:GetParent():GetParent());
 					</OnLeave>
 				</Scripts>
 				<NormalTexture file="Interface\ChatFrame\ChatFrameExpandArrow"/>
@@ -135,9 +131,9 @@
 				</Anchors>
 				<Scripts>
 					<OnEnter>
-						myUIDropDownMenu_StopCounting(this:GetParent():GetParent());
-						myCloseDropDownMenus(this:GetParent():GetParent():GetID() + 1);
-						local parent = this:GetParent();
+						myUIDropDownMenu_StopCounting(self:GetParent():GetParent());
+						myCloseDropDownMenus(self:GetParent():GetParent():GetID() + 1);
+						local parent = self:GetParent();
 						if ( parent.tooltipTitle and parent.tooltipWhileDisabled) then
 							if ( parent.tooltipOnButton ) then
 								GameTooltip:SetOwner(parent, "ANCHOR_RIGHT");
@@ -145,12 +141,12 @@
 								GameTooltip:AddLine(parent.tooltipText);
 								GameTooltip:Show();
 							else
-								GameTooltip_AddNewbieTip(parent, parent.tooltipTitle, 1.0, 1.0, 1.0, parent.tooltipText, 1);
+								Achiever_AddNewbieTip(parent, parent.tooltipTitle, 1.0, 1.0, 1.0, parent.tooltipText, 1);
 							end
 						end
 					</OnEnter>
 					<OnLeave>
-						myUIDropDownMenu_StartCounting(this:GetParent():GetParent());
+						myUIDropDownMenu_StartCounting(self:GetParent():GetParent());
 						GameTooltip:Hide();
 					</OnLeave>
 				</Scripts>
@@ -158,39 +154,37 @@
 		</Frames>
 		<Scripts>
 			<OnLoad>
-				this:SetFrameLevel(2);
+				self:SetFrameLevel(2);
 			</OnLoad>
 			<OnClick>
-				myUIDropDownMenuButton_OnClick(this, button, down);
+				myUIDropDownMenuButton_OnClick(self, button, down);
 			</OnClick>
 			<OnEnter>
-				local _G, _ = _G or getfenv()
-				if ( this.hasArrow ) then
-					local level =  this:GetParent():GetID() + 1;
-					local listFrame = _G["DropDownList"..level];
-					if ( not listFrame or not listFrame:IsShown() or select(2, listFrame:GetPoint()) ~= this ) then
-						myToggleDropDownMenu(this:GetParent():GetID() + 1, this.value, nil, nil, nil, nil, this.menuList, this);
+				if ( self.hasArrow ) then
+					local level =  self:GetParent():GetID() + 1;
+					local listFrame = _G["myDropDownList"..level];
+					if ( not listFrame or not listFrame:IsShown() or select(2, listFrame:GetPoint()) ~= self ) then
+						myToggleDropDownMenu(self:GetParent():GetID() + 1, self.value, nil, nil, nil, nil, self.menuList, self);
 					end
 				else
-					myCloseDropDownMenus(this:GetParent():GetID() + 1);
+					myCloseDropDownMenus(self:GetParent():GetID() + 1);
 				end
-				_G[this:GetName().."Highlight"]:Show();
-				myUIDropDownMenu_StopCounting(this:GetParent());
-				if ( this.tooltipTitle ) then
-					if ( this.tooltipOnButton ) then
-						GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-						GameTooltip:AddLine(this.tooltipTitle, 1.0, 1.0, 1.0);
-						GameTooltip:AddLine(this.tooltipText);
+				_G[self:GetName().."Highlight"]:Show();
+				myUIDropDownMenu_StopCounting(self:GetParent());
+				if ( self.tooltipTitle ) then
+					if ( self.tooltipOnButton ) then
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:AddLine(self.tooltipTitle, 1.0, 1.0, 1.0);
+						GameTooltip:AddLine(self.tooltipText);
 						GameTooltip:Show();
 					else
-						GameTooltip_AddNewbieTip(this, this.tooltipTitle, 1.0, 1.0, 1.0, this.tooltipText, 1);
+						Achiever_AddNewbieTip(self, self.tooltipTitle, 1.0, 1.0, 1.0, self.tooltipText, 1);
 					end
 				end
 			</OnEnter>
 			<OnLeave>
-				local _G, _ = _G or getfenv()
-				_G[this:GetName().."Highlight"]:Hide();
-				myUIDropDownMenu_StartCounting(this:GetParent());
+				_G[self:GetName().."Highlight"]:Hide();
+				myUIDropDownMenu_StartCounting(self:GetParent());
 				GameTooltip:Hide();
 			</OnLeave>
 		</Scripts>
@@ -207,77 +201,56 @@
 	</Button>
 	<Button name="myUIDropDownListTemplate" hidden="true" frameStrata="DIALOG" enableMouse="true" virtual="true">
 		<Frames>
-			<Frame name="$parentBackdrop" setAllPoints="true">
-				<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background-Dark" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
-					<BackgroundInsets>
-						<AbsInset left="11" right="12" top="12" bottom="9"/>
-					</BackgroundInsets>
-					<TileSize>
-						<AbsValue val="32"/>
-					</TileSize>
-					<EdgeSize>
-						<AbsValue val="32"/>
-					</EdgeSize>
-				</Backdrop>
+			<Frame name="$parentBackdrop" setAllPoints="true" inherits="BackdropTemplate">
+				<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_4" type="global"/></KeyValues>
 			</Frame>
-			<Frame name="$parentMenuBackdrop" setAllPoints="true">
-				<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-					<EdgeSize>
-						<AbsValue val="16"/>
-					</EdgeSize>
-					<TileSize>
-						<AbsValue val="16"/>
-					</TileSize>
-					<BackgroundInsets>
-						<AbsInset left="5" right="5" top="5" bottom="4"/>
-					</BackgroundInsets>
-				</Backdrop>
+			<Frame name="$parentMenuBackdrop" setAllPoints="true" inherits="BackdropTemplate">
+				<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_5" type="global"/></KeyValues>
 				<Scripts>
-					<OnLoad>
-						this:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TOOLTIP_DEFAULT_COLOR.b);
-						this:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b);
+					<OnLoad inherit="prepend">
+						self:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TOOLTIP_DEFAULT_COLOR.b);
+						self:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b);
 					</OnLoad>
 				</Scripts>
 			</Frame>
-			<Button name="$parentButton1" inherits="UIDropDownMenuButtonTemplate" id="1"/>
-			<Button name="$parentButton2" inherits="UIDropDownMenuButtonTemplate" id="2"/>
-			<Button name="$parentButton3" inherits="UIDropDownMenuButtonTemplate" id="3"/>
-			<Button name="$parentButton4" inherits="UIDropDownMenuButtonTemplate" id="4"/>
-			<Button name="$parentButton5" inherits="UIDropDownMenuButtonTemplate" id="5"/>
-			<Button name="$parentButton6" inherits="UIDropDownMenuButtonTemplate" id="6"/>
-			<Button name="$parentButton7" inherits="UIDropDownMenuButtonTemplate" id="7"/>
-			<Button name="$parentButton8" inherits="UIDropDownMenuButtonTemplate" id="8"/>
+			<Button name="$parentButton1" inherits="myUIDropDownMenuButtonTemplate" id="1"/>
+			<Button name="$parentButton2" inherits="myUIDropDownMenuButtonTemplate" id="2"/>
+			<Button name="$parentButton3" inherits="myUIDropDownMenuButtonTemplate" id="3"/>
+			<Button name="$parentButton4" inherits="myUIDropDownMenuButtonTemplate" id="4"/>
+			<Button name="$parentButton5" inherits="myUIDropDownMenuButtonTemplate" id="5"/>
+			<Button name="$parentButton6" inherits="myUIDropDownMenuButtonTemplate" id="6"/>
+			<Button name="$parentButton7" inherits="myUIDropDownMenuButtonTemplate" id="7"/>
+			<Button name="$parentButton8" inherits="myUIDropDownMenuButtonTemplate" id="8"/>
 		</Frames>
 		<Scripts>
 			<OnClick>
-				this:Hide();
+				self:Hide();
 			</OnClick>
 			<OnEnter>
-				myUIDropDownMenu_StopCounting(this, motion);
+				myUIDropDownMenu_StopCounting(self, motion);
 			</OnEnter>
 			<OnLeave>
-				myUIDropDownMenu_StartCounting(this, motion);
+				myUIDropDownMenu_StartCounting(self, motion);
 			</OnLeave>
 			<OnUpdate>
-				myUIDropDownMenu_OnUpdate(this, elapsed);
+				myUIDropDownMenu_OnUpdate(self, elapsed);
 			</OnUpdate>
 			<OnShow>
-				local _G, _ = _G or getfenv()
 				for i=1, MYUIDROPDOWNMENU_MAXBUTTONS do
-					if (not this.noResize) then
-						_G[this:GetName().."Button"..i]:SetWidth(this.maxWidth);
+					if (not self.noResize) then
+						_G[self:GetName().."Button"..i]:SetWidth(self.maxWidth);
 					end
 				end
-				if (not this.noResize) then
-					this:SetWidth(this.maxWidth+25);
+				if (not self.noResize) then
+					self:SetWidth(self.maxWidth+25);
 				end
-				this.showTime = nil;
-				if ( this:GetID() > 1 ) then
-					this.parent = _G["DropDownList"..(this:GetID() - 1)];
+				self.showTime = nil;
+				if ( self:GetID() &gt; 1 ) then
+					self.parent = _G["myDropDownList"..(self:GetID() - 1)];
 				end
 			</OnShow>
 			<OnHide>
-				myUIDropDownMenu_OnHide(this);
+				myUIDropDownMenu_OnHide(self);
 			</OnHide>
 		</Scripts>
 	</Button>
@@ -346,8 +319,8 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						myToggleDropDownMenu(nil, nil, this:GetParent());
-						PlaySound("igMainMenuOptionCheckBoxOn");
+						myToggleDropDownMenu(nil, nil, self:GetParent());
+						Achiever_PlaySound("igMainMenuOptionCheckBoxOn");
 					</OnClick>
 				</Scripts>
 				<NormalTexture name="$parentNormalTexture" file="Interface\ChatFrame\UI-ChatIcon-ScrollDown-Up">

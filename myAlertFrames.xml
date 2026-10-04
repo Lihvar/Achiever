@@ -1,16 +1,13 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-..\FrameXML\UI.xsd">
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 
-<Script file="AlertFrames.lua"/>
-
-<Frame name="AlertFrameTemplate" virtual="true">
+<Frame name="AchieverAlertFrameTemplate" virtual="true">
 	<Scripts>
-		<OnEnter>AlertFrame_StopOutAnimation(this)</OnEnter>
-		<OnLeave>AlertFrame_ResumeOutAnimation(this)</OnLeave>
+		<OnEnter>myAlertFrame_StopOutAnimation(self)</OnEnter>
+		<OnLeave>myAlertFrame_ResumeOutAnimation(self)</OnLeave>
 	</Scripts>
 </Frame>
 
-<Button name="AchievementAlertFrameTemplate" parent="UIParent" hidden="true" frameStrata="DIALOG" virtual="true" inherits="AlertFrameTemplate">
+<Button name="AchieverAlertTemplate" parent="UIParent" hidden="true" frameStrata="DIALOG" virtual="true" inherits="AchieverAlertFrameTemplate">
 	<Size>
 		<AbsDimension x="300" y="88"/>
 	</Size>
@@ -144,24 +141,23 @@
 			</Layers>
 			<Scripts>
 				<OnLoad>
-					local _G, _ = _G or getfenv()
-					local name = this:GetName();
-					this.bling = _G[name .. "Bling"];
-					this.texture = _G[name .. "Texture"];
-					this.frame = _G[name .. "Overlay"];
+					local name = self:GetName();
+					self.bling = _G[name .. "Bling"];
+					self.texture = _G[name .. "Texture"];
+					self.frame = _G[name .. "Overlay"];
 
-					this.Desaturate =
-						function (this)
-							this.bling:SetVertexColor(.6, .6, .6, 1);
-							this.frame:SetVertexColor(.75, .75, .75, 1);
-							this.texture:SetVertexColor(.55, .55, .55, 1);
+					self.Desaturate =
+						function (self)
+							self.bling:SetVertexColor(.6, .6, .6, 1);
+							self.frame:SetVertexColor(.75, .75, .75, 1);
+							self.texture:SetVertexColor(.55, .55, .55, 1);
 						end
 
-					this.Saturate =
-						function (this)
-							this.bling:SetVertexColor(1, 1, 1, 1);
-							this.frame:SetVertexColor(1, 1, 1, 1);
-							this.texture:SetVertexColor(1, 1, 1, 1);
+					self.Saturate =
+						function (self)
+							self.bling:SetVertexColor(1, 1, 1, 1);
+							self.frame:SetVertexColor(1, 1, 1, 1);
+							self.texture:SetVertexColor(1, 1, 1, 1);
 						end
 				</OnLoad>
 			</Scripts>
@@ -210,22 +206,20 @@
 			</Layers>
 			<Scripts>
 				<OnLoad>
-					AchievementShield_OnLoad(this);
+					AchievementShield_OnLoad(self);
 				</OnLoad>
 			</Scripts>
 		</Frame>
 	</Frames>
 	<Scripts>
 		<OnLoad>
-			AchievementAlertFrame_OnLoad(this);
+			AchieverAlertFrame_OnLoad(self);
 		</OnLoad>
 		<OnClick>
-			AchievementAlertFrame_OnClick(this, button, down);
+			AchieverAlertFrame_OnClick(self, button, down);
 		</OnClick>
-		<OnHide function="AchievementAlertFrame_OnHide"/>
+		<OnHide function="AchieverAlertFrame_OnHide"/>
 	</Scripts>
 </Button>
-
-<Frame name="AlertFrame" parent="UIParent" hidden="true"></Frame>
 
 </Ui>

@@ -1,11 +1,10 @@
-local _G, _ = _G or getfenv()
 local function warn(msg)
 	DEFAULT_CHAT_FRAME:AddMessage('|cf3f3f66cWARN: |cffff55ff'.. (msg or 'nil'))
 end
 
 SLASH_ACHIEVERALERT1 = "/acal"
 SlashCmdList.ACHIEVERALERT = function(id)
-	AlertFrame_ShowAchievementEarned(tonumber(id))
+	myAlertFrame_ShowAchievementEarned(tonumber(id))
 end
 
 local config = {}
@@ -33,7 +32,7 @@ config.alert.tryAttachToRollFrame = false
 
 MAX_ACHIEVEMENT_ALERTS = config.alert.max;
 
-function AlertFrame_ShowAchievementEarned(id)
+function myAlertFrame_ShowAchievementEarned(id)
 	if (id == nil) then
         warn('provide an achievement id')
         return
@@ -46,15 +45,15 @@ function AlertFrame_ShowAchievementEarned(id)
 	-- if ( not AchievementFrame ) then
 	-- 	AchievementFrame_LoadUI();
 	-- end
-	AchievementAlertFrame_ShowAlert(tonumber(id))
+	AchieverAlertFrame_ShowAlert(tonumber(id))
 end
 
-function AlertFrame_FixAnchors()
-	AchievementAlertFrame_FixAnchors();
+function myAlertFrame_FixAnchors()
+	AchieverAlertFrame_FixAnchors();
 end
 
-function AlertFrame_AnimateIn(frame)
-	frame:SetScript("OnUpdate", AchievementAlertFrame_OnUpdate);
+function myAlertFrame_AnimateIn(frame)
+	frame:SetScript("OnUpdate", AchieverAlertFrame_OnUpdate);
 	frame.oldFrameTime = GetTime()
 	frame.elapsed = 0
 	frame.fadeinDuration = 0.2;
@@ -67,7 +66,7 @@ function AlertFrame_AnimateIn(frame)
 	frame:Show();
 end
 
-function AlertFrame_StopOutAnimation(frame)
+function myAlertFrame_StopOutAnimation(frame)
 	frame.wait = true
 	frame:SetAlpha(1);
 	frame.elapsed = 0;
@@ -75,21 +74,21 @@ function AlertFrame_StopOutAnimation(frame)
 	-- frame.waitAndAnimOut.animOut:SetStartDelay(1);
 end
 
-function AlertFrame_ResumeOutAnimation(frame)
+function myAlertFrame_ResumeOutAnimation(frame)
 	frame.wait = false
 	-- frame.waitAndAnimOut:Play();
 end
 
--- [[ AchievementAlertFrame ]] --
-function AchievementAlertFrame_OnLoad (self)
+-- [[ AchieverAlertFrame ]] --
+function AchieverAlertFrame_OnLoad (self)
 	self.glow = _G[self:GetName() .. "Glow"];
 	self.shine = _G[self:GetName() .. "Shine"];
 	self:RegisterForClicks("LeftButtonUp");
 end
 
-function AchievementAlertFrame_FixAnchors ()
+function AchieverAlertFrame_FixAnchors ()
 	-- Temporary (here's hoping) workaround so that achievement alerts are anchored to loot roll windows. Eventually we want one system to handle placement for both alerts.
-	if ( not AchievementAlertFrame1 ) then
+	if ( not AchieverAlertFrame1 ) then
 		-- We haven't displayed any achievement alerts yet, so there's nothing to reanchor (read: this got called by LootFrame.lua)
 		return;
 	end
@@ -98,24 +97,29 @@ function AchievementAlertFrame_FixAnchors ()
 	for i=NUM_GROUP_LOOT_FRAMES, 1, -1  do
 		local frame = _G["GroupLootFrame"..i];
 		if ( frame and frame:IsShown() ) then
-			AchievementAlertFrame1:SetPoint("BOTTOM", frame, "TOP", 0, 10);
+			AchieverAlertFrame1:SetPoint("BOTTOM", frame, "TOP", 0, 10);
 			return;
 		end
 	end
 
-	AchievementAlertFrame1:SetPoint("BOTTOM", UIParent, config.alert.anchor.parentSide, config.alert.anchor.x, config.alert.anchor.y);
+	AchieverAlertFrame1:SetPoint("BOTTOM", UIParent, config.alert.anchor.parentSide, config.alert.anchor.x, config.alert.anchor.y);
 end
 
-function AchievementAlertFrame_ShowAlert (achievementID)
+function AchieverAlertFrame_ShowAlert (achievementID)
 	PlaySoundFile([[Interface\AddOns\Achiever\sounds\AchievementEarned.mp3]], 'SFX');
-	local frame = AchievementAlertFrame_GetAlertFrame();
+	local frame = AchieverAlertFrame_GetAlertFrame();
 	local _, name, points, completed, month, day, year, description, flags, icon = GetAchievementInfo(achievementID);
 	if ( not frame ) then
 		-- We ran out of frames! Bail!
 		return;
 	end
 
-	_G[frame:GetName() .. "Name"]:SetText(name);
+	local nameString = _G[frame:GetName() .. "Name"];
+	if ( not nameString ) then
+		warn("alert frame template is incomplete (" .. frame:GetName() .. "Name is missing)");
+		return;
+	end
+	nameString:SetText(name);
 
 	local shield = _G[frame:GetName() .. "Shield"];
 	AchievementShield_SetPoints(points, shield.points, GameFontNormal, GameFontNormalSmall);
@@ -135,26 +139,26 @@ function AchievementAlertFrame_ShowAlert (achievementID)
 
 	frame.id = achievementID;
 
-	AlertFrame_AnimateIn(frame);
+	myAlertFrame_AnimateIn(frame);
 
-	AlertFrame_FixAnchors();
+	myAlertFrame_FixAnchors();
 
-	if ( not AchievementFrame:IsShown() ) then
+	if ( SetButtonPulse and AchievementsMicroButton and not AchievementFrame:IsShown() ) then
 		SetButtonPulse(AchievementsMicroButton, 60, 1)
 	end
 end
 
-function AchievementAlertFrame_GetAlertFrame()
+function AchieverAlertFrame_GetAlertFrame()
 	local name, frame, previousFrame;
 	for i=1, config.alert.max do
-		name = "AchievementAlertFrame"..i;
+		name = "AchieverAlertFrame"..i;
 		frame = _G[name];
 		if ( frame ) then
 			if ( not frame:IsShown() ) then
 				return frame;
 			end
 		else
-			frame = CreateFrame("Button", name, UIParent, "AchievementAlertFrameTemplate");
+			frame = CreateFrame("Button", name, UIParent, "AchieverAlertTemplate");
 			if ( not previousFrame ) then
 				frame:SetPoint("BOTTOM", UIParent, config.alert.anchor.parentSide, config.alert.anchor.x, config.alert.anchor.y);
 			else
@@ -171,14 +175,14 @@ function AchievementAlertFrame_GetAlertFrame()
 	return nil;
 end
 
-function AchievementAlertFrame_OnClick (self)
+function AchieverAlertFrame_OnClick (self)
 	local id = self.id;
 	if ( not id ) then
 		return;
 	end
 
 	CloseAllWindows();
-	ShowUIPanel(AchievementFrame);
+	Achiever_ShowPanel(AchievementFrame);
 
 	local _, _, _, achCompleted = GetAchievementInfo(id);
 	if ( achCompleted and (ACHIEVEMENTUI_SELECTEDFILTER == AchievementFrameFilters[ACHIEVEMENT_FILTER_INCOMPLETE].func) ) then
@@ -190,91 +194,91 @@ function AchievementAlertFrame_OnClick (self)
 	AchievementFrame_SelectAchievement(id)
 end
 
-function AchievementAlertFrame_OnHide (self)
-	AlertFrame_FixAnchors();
+function AchieverAlertFrame_OnHide (self)
+	myAlertFrame_FixAnchors();
 end
 
-function AchievementAlertFrame_OnUpdate(self)
+function AchieverAlertFrame_OnUpdate(self)
 	local newFrameTime = GetTime()
-	local elapsed = newFrameTime - this.oldFrameTime
-	this.oldFrameTime = newFrameTime
+	local elapsed = newFrameTime - self.oldFrameTime
+	self.oldFrameTime = newFrameTime
 
-	local state = this.state;
+	local state = self.state;
 	local alpha;
 	local deltaTime = elapsed;
 	--initialize
 	if ( not state ) then
 		state = "fadein";
-		this.glow:Show();
-		this.glow:SetAlpha(0);
-		this.totalElapsed = 0;
+		self.glow:Show();
+		self.glow:SetAlpha(0);
+		self.totalElapsed = 0;
 	end
-	this.totalElapsed = this.totalElapsed+elapsed;
-	elapsed = this.elapsed + elapsed;
+	self.totalElapsed = self.totalElapsed+elapsed;
+	elapsed = self.elapsed + elapsed;
 	if ( state == "fadein" ) then
-		if ( elapsed >= this.fadeinDuration ) then
+		if ( elapsed >= self.fadeinDuration ) then
 			state = "flash";
 			elapsed = 0;
-			this:SetAlpha(1);
-			this.glow:Show();
+			self:SetAlpha(1);
+			self.glow:Show();
 		else
-			this:SetAlpha(elapsed/this.fadeinDuration);
-			this.glow:SetAlpha(elapsed/this.fadeinDuration);
+			self:SetAlpha(elapsed/self.fadeinDuration);
+			self.glow:SetAlpha(elapsed/self.fadeinDuration);
 		end
 	elseif ( state == "flash" ) then
-		if ( elapsed >= this.flashDuration ) then
+		if ( elapsed >= self.flashDuration ) then
 			state = "hold";
 			elapsed = 0;
-			this.glow:Hide();
+			self.glow:Hide();
 		else
-			this.glow:SetAlpha(1-(elapsed/this.flashDuration));
+			self.glow:SetAlpha(1-(elapsed/self.flashDuration));
 		end
-	elseif ( state == "hold" and not this.wait) then
-		if ( elapsed >= this.holdDuration ) then
+	elseif ( state == "hold" and not self.wait) then
+		if ( elapsed >= self.holdDuration ) then
 			state = "fadeout";
 			elapsed = 0;
 		end
-	elseif ( state == "fadeout" and not this.wait) then
-		if ( elapsed >= this.fadeoutDuration ) then
+	elseif ( state == "fadeout" and not self.wait) then
+		if ( elapsed >= self.fadeoutDuration ) then
 			state = nil;
-			this:SetScript("OnUpdate", nil);
-			this:Hide();
-			this.id = nil;
+			self:SetScript("OnUpdate", nil);
+			self:Hide();
+			self.id = nil;
 		else
-			this:SetAlpha(1-(elapsed/this.fadeoutDuration));
+			self:SetAlpha(1-(elapsed/self.fadeoutDuration));
 		end
 	end
 
 	--Handle shine
-	local normalizedTime = this.totalElapsed - this.shineStartTime;
-	if ( normalizedTime >= 0 and normalizedTime <= this.shineDuration ) then
-		if ( not this.shine:IsShown() ) then
-			this.shine:Show();
-			this.shine:SetPoint("TOPLEFT", this, "TOPLEFT", 0, -8);
-			this.shine:SetAlpha(1);
+	local normalizedTime = self.totalElapsed - self.shineStartTime;
+	if ( normalizedTime >= 0 and normalizedTime <= self.shineDuration ) then
+		if ( not self.shine:IsShown() ) then
+			self.shine:Show();
+			self.shine:SetPoint("TOPLEFT", self, "TOPLEFT", 0, -8);
+			self.shine:SetAlpha(1);
 		end
 		local target = 239;
-		local _,_,_,x = this.shine:GetPoint();
+		local _,_,_,x = self.shine:GetPoint();
 		if ( x ~= target ) then
-			x = x +(target-x)*(deltaTime/(this.shineDuration/3));
+			x = x +(target-x)*(deltaTime/(self.shineDuration/3));
 			if ( floor(abs(target - x)) == 0 ) then
 				x = target;
 			end
 		end
 
-		this.shine:SetPoint("TOPLEFT", this, "TOPLEFT", x, -8);
-		this.shine:SetAlpha(1);
-		local startShineFade = 0.8*this.shineDuration;
+		self.shine:SetPoint("TOPLEFT", self, "TOPLEFT", x, -8);
+		self.shine:SetAlpha(1);
+		local startShineFade = 0.8*self.shineDuration;
 		if ( normalizedTime >= startShineFade ) then
-			this.shine:SetAlpha(1-((normalizedTime-startShineFade)/(this.shineDuration-startShineFade)));
+			self.shine:SetAlpha(1-((normalizedTime-startShineFade)/(self.shineDuration-startShineFade)));
 		end
 	else
-		if ( this.shine:IsShown() ) then
-			this.shine:Hide();
-			this.vel = nil;
+		if ( self.shine:IsShown() ) then
+			self.shine:Hide();
+			self.vel = nil;
 		end
 	end
 
-	this.state = state;
-	this.elapsed = elapsed;
+	self.state = state;
+	self.elapsed = elapsed;
 end

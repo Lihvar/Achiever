@@ -2,7 +2,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://www.blizzard.com/wow/ui/
          ..\..\FrameXML\UI.xsd">
-    <Script File="Achiever.lua"/>
     <Button name="Achiever_Minimap" movable="true" parent="UIParent" enableMouse="true" toplevel="true" frameStrata="LOW">
         <Size x="33" y="33"/>
         <Anchors>
@@ -20,68 +19,60 @@
                     <TexCoords left="0" right=".5" top="0" bottom="1"/>
                 </Texture>
             </Layer>
-            <!-- <Layer level="OVERLAY">
-                <Texture file="Interface\Minimap\MiniMap-TrackingBorder">
-                    <Size x="56" y="56"/>
-                    <Anchors>
-                        <Anchor point="TOPLEFT"/>
-                    </Anchors>
-                </Texture>
-            </Layer> -->
         </Layers>
         <HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
         <Scripts>
             <OnLoad>
-                this:RegisterForClicks("RightButtonUp")
-                this:RegisterForDrag("LeftButton")
-                this:SetClampedToScreen(true)
+                self:RegisterForClicks("RightButtonUp")
+                self:RegisterForDrag("LeftButton")
+                self:SetClampedToScreen(true)
             </OnLoad>
             <OnDragStart>
-                this:LockHighlight()
-                this:StartMoving()
+                self:LockHighlight()
+                self:StartMoving()
             </OnDragStart>
             <OnDragStop>
-                this:UnlockHighlight()
-                this:StopMovingOrSizing()
+                self:UnlockHighlight()
+                self:StopMovingOrSizing()
             </OnDragStop>
             <OnEnter>
-                <!-- LFT_ShowMinimap() -->
-                GameTooltip:SetOwner(this, "ANCHOR_LEFT", 0, -110)
+                GameTooltip:SetOwner(self, "ANCHOR_LEFT", 0, -110)
                 GameTooltip:AddLine('Achiever', 1, 1, 1)
                 GameTooltip:AddLine('Left-click to open Achiever.')
                 GameTooltip:AddLine('Drag to move.')
                 GameTooltip:Show()
             </OnEnter>
             <OnLeave>
-                <!-- LFT_HideMinimap() -->
                 GameTooltip:Hide()
             </OnLeave>
             <OnMouseUp>
-                if arg1 == "LeftButton" then
+                if button == "LeftButton" then
                     AchievementFrame_ToggleAchievementFrame()
                 end
             </OnMouseUp>
         </Scripts>
     </Button>
-    <!-- Adds the button seen in later versions that opened the Achievement window -->
-    <Button name="AchievementsMicroButton" inherits="MainMenuBarMicroButton" parent="MainMenuBarArtFrame">
-        <Anchors>
-            <Anchor point="BOTTOMLEFT" relativeTo="TalentMicroButton" relativePoint="BOTTOMRIGHT">
-                <Offset>
-                    <AbsDimension x="-3" y="0" />
-                </Offset>
-            </Anchor>
-        </Anchors>
+    <!-- Adds the button seen in later versions that opened the Achievement window.
+         Plain button: the Classic 1.14 client no longer has the MainMenuBarMicroButton template.
+         It is re-parented and anchored to the micro menu from Lua (see UpdateAchievementsButton). -->
+    <Button name="AchievementsMicroButton" parent="UIParent">
+        <Size x="28" y="58"/>
         <Scripts>
             <OnLoad>
-                 AchievementsMicroButton_OnLoad();
-             </OnLoad>
-             <OnClick>
-                 AchievementFrame_ToggleAchievementFrame();
-             </OnClick>
-             <OnEvent>
-                 AchievementsMicroButton_OnEvent();
-             </OnEvent>
+                AchievementsMicroButton_OnLoad(self);
+            </OnLoad>
+            <OnClick>
+                AchievementFrame_ToggleAchievementFrame();
+            </OnClick>
+            <OnEvent>
+                AchievementsMicroButton_OnEvent(self, event, ...);
+            </OnEvent>
+            <OnEnter>
+                AchievementsMicroButton_OnEnter(self);
+            </OnEnter>
+            <OnLeave>
+                GameTooltip:Hide();
+            </OnLeave>
         </Scripts>
     </Button>
 </Ui>

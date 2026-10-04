@@ -1,65 +1,17 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-..\..\FrameXML\UI.xsd">
-	<Font name="SystemFont_Shadow_Med1" font="Fonts\FRIZQT__.TTF" virtual="true">
-		<Shadow>
-			<Offset>
-				<AbsDimension x="1" y="-1"/>
-			</Offset>
-			<Color r="0" g="0" b="0"/>
-		</Shadow>
-		<FontHeight>
-			<AbsValue val="12"/>
-		</FontHeight>
-	</Font>
-	<Font name="SystemFont_Shadow_Med3" font="Fonts\FRIZQT__.TTF" virtual="true">
-		<Shadow>
-			<Offset>
-				<AbsDimension x="1" y="-1"/>
-			</Offset>
-			<Color r="0" g="0" b="0"/>
-		</Shadow>
-		<FontHeight>
-			<AbsValue val="14"/>
-		</FontHeight>
-	</Font>
-	<Font name="SystemFont_Small" font="Fonts\FRIZQT__.TTF" virtual="true">
-		<FontHeight>
-			<AbsValue val="10"/>
-		</FontHeight>
-	</Font>
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
 	<Font name="AchievementFont_Small" font="Fonts\FRIZQT__.TTF" virtual="true">
 		<FontHeight>
 			<AbsValue val="10"/>
 		</FontHeight>
 	</Font>
-	<Font name="SystemFont_Shadow_Large" font="Fonts\FRIZQT__.TTF" virtual="true">
-		<Shadow>
-			<Offset>
-				<AbsDimension x="1" y="-1"/>
-			</Offset>
-			<Color r="0" g="0" b="0"/>
-		</Shadow>
-		<FontHeight>
-			<AbsValue val="16"/>
-		</FontHeight>
-	</Font>
-	<Font name="GameFontNormal" inherits="SystemFont_Shadow_Med1" virtual="true">
-		<Color r="1.0" g="0.82" b="0"/>
-	</Font>
-	<Font name="GameFontHighlight" inherits="GameFontNormal" virtual="true">
-		<Color r="1.0" g="1.0" b="1.0"/>
-	</Font>
-	<Font name="GameFontHighlightLeft" inherits="GameFontHighlight" justifyH="LEFT" virtual="true"/>
-	<Font name="GameFontHighlightMedium" inherits="SystemFont_Shadow_Med3" virtual="true">
+	<Font name="AchieverFontHighlightLeft" inherits="GameFontHighlight" justifyH="LEFT" virtual="true"/>
+	<Font name="AchieverFontHighlightMedium" inherits="SystemFont_Shadow_Med3" virtual="true">
 		<Color r="1.0" g="1.0" b="1.0"/>
 	</Font>
 	<Font name="AchievementPointsFont" inherits="SystemFont_Shadow_Large" justifyH="CENTER" virtual="true">
 		<Color r="1.0" g="0.82" b="0"/>
 	</Font>
 	<Font name="AchievementPointsFontSmall" inherits="SystemFont_Shadow_Med1" justifyH="CENTER" virtual="true">
-		<Color r="1.0" g="0.82" b="0"/>
-	</Font>
-	<Font name="GameFontNormalLarge" inherits="SystemFont_Shadow_Large" virtual="true">
 		<Color r="1.0" g="0.82" b="0"/>
 	</Font>
 	<Font name="AchievementDescriptionFont" inherits="SystemFont_Small" justifyH="CENTER" justifyV="TOP" virtual="true">
@@ -78,14 +30,14 @@
 	<Font name="AchievementDateFont" inherits="AchievementFont_Small" justifyH="RIGHT" virtual="true">
 		<Color r="1.0" g="0.82" b="0"/>
 	</Font>
-	<Font name="GameFontBlackSmall" inherits="SystemFont_Small" virtual="true">
+	<Font name="AchieverFontBlackSmall" inherits="SystemFont_Small" virtual="true">
 		<Color r="0" g="0" b="0"/>
 	</Font>
-	<Font name="GameFontWhiteSmall" inherits="GameFontBlackSmall" virtual="true">
+	<Font name="AchieverFontWhiteSmall" inherits="AchieverFontBlackSmall" virtual="true">
 		<Color r="1.0" g="1.0" b="1.0"/>
 	</Font>
-	<Font name="GameFontHighlightRight" inherits="GameFontHighlight" justifyH="RIGHT" virtual="true"/>
-	<StatusBar name="TooltipStatusBarTemplate" virtual="true">
+	<Font name="AchieverFontHighlightRight" inherits="GameFontHighlight" justifyH="RIGHT" virtual="true"/>
+	<StatusBar name="AchieverTooltipStatusBarTemplate" virtual="true">
 		<Size>
 			<AbsDimension x="0" y="12"/>
 		</Size>
@@ -115,7 +67,7 @@
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				this:SetStatusBarColor(0, 1.0, 0);
+				self:SetStatusBarColor(0, 1.0, 0);
 			</OnLoad>
 		</Scripts>
 		<BarTexture name="$parentTexture" file="Interface\TargetingFrame\UI-TargetingFrame-BarFill"/>
@@ -229,31 +181,29 @@
 				</Frames>
 				<Scripts>
 					<OnClick>
-						AchievementFrameSummaryCategoryButton_OnClick(this, button, down);
+						AchievementFrameSummaryCategoryButton_OnClick(self, button, down);
 					</OnClick>
 					<OnEnter>
-						local _G, _ = _G or getfenv()
-						_G[this:GetName().."Highlight"]:Show();
+						_G[self:GetName().."Highlight"]:Show();
 					</OnEnter>
 					<OnLeave>
-						local _G, _ = _G or getfenv()
-						_G[this:GetName().."Highlight"]:Hide();
+						_G[self:GetName().."Highlight"]:Hide();
 					</OnLeave>
 				</Scripts>
 			</Button>
 		</Frames>
 		<Scripts>
 			<OnLoad>
-				AchievementFrameSummaryCategory_OnLoad(this);
+				AchievementFrameSummaryCategory_OnLoad(self);
 			</OnLoad>
 			<OnShow>
-				AchievementFrameSummaryCategory_OnShow(this);
+				AchievementFrameSummaryCategory_OnShow(self);
 			</OnShow>
 			<OnHide>
-				AchievementFrameSummaryCategory_OnHide(this);
+				AchievementFrameSummaryCategory_OnHide(self);
 			</OnHide>
 			<OnEvent>
-				AchievementFrameSummaryCategory_OnEvent(this, event, ...);
+				AchievementFrameSummaryCategory_OnEvent(self, event, ...);
 			</OnEvent>
 		</Scripts>
 		<BarTexture name="$parentBar" file="Interface\AddOns\Achiever\textures\UI-Character-Skills-Bar"/>
@@ -278,19 +228,19 @@
 		</HitRectInsets>
 		<Scripts>
 			<OnClick>
-				if ( this:GetChecked() ) then
-					PlaySound("igMainMenuOptionCheckBoxOn");
+				if ( self:GetChecked() ) then
+					Achiever_PlaySound("igMainMenuOptionCheckBoxOn");
 				else
-					PlaySound("igMainMenuOptionCheckBoxOff");
+					Achiever_PlaySound("igMainMenuOptionCheckBoxOff");
 				end
-				local tracked = AchievementButton_ToggleTracking(this:GetParent().id);
+				local tracked = AchievementButton_ToggleTracking(self:GetParent().id);
 				if ( not tracked ) then
-					this:SetChecked(0);
+					self:SetChecked(0);
 				end
 			</OnClick>
 			<OnEnter>
-				GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-				if ( this:GetChecked() ) then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+				if ( self:GetChecked() ) then
 					<!-- GameTooltip:SetText(UNTRACK_ACHIEVEMENT_TOOLTIP, nil, nil, nil, nil, 1); -->
 					GameTooltip:SetText(UNTRACK_ACHIEVEMENT_TOOLTIP);
 				else
@@ -302,7 +252,7 @@
 				GameTooltip:Hide();
 			</OnLeave>
 			<OnShow>
-				this:SetChecked(IsTrackedAchievement(this:GetParent().id));
+				self:SetChecked(IsTrackedAchievement(self:GetParent().id));
 			</OnShow>
 		</Scripts>
 		<NormalTexture file="Interface\AddOns\Achiever\textures\UI-CheckBox-Up"/>
@@ -412,29 +362,28 @@
         </Layers>
 		<Scripts>
 			<OnLoad>
-				local _G, _ = _G or getfenv()
-				local name = this:GetName();
+				local name = self:GetName();
 				_G[name.."Left"]:SetVertexColor(0.6, 0.6, 0.6);
 				_G[name.."Middle"]:SetVertexColor(0.6, 0.6, 0.6);
 				_G[name.."Right"]:SetVertexColor(0.6, 0.6, 0.6);
 				_G[name.."LeftDisabled"]:SetPoint("TOPLEFT", 0, 2);
-				this.leftHighlight = _G[name.."LeftHighlight"];
-				this.middleHighlight = _G[name.."MiddleHighlight"];
-				this.rightHighlight = _G[name.."RightHighlight"];
-				this.text = _G[name.."Text"];
+				self.leftHighlight = _G[name.."LeftHighlight"];
+				self.middleHighlight = _G[name.."MiddleHighlight"];
+				self.rightHighlight = _G[name.."RightHighlight"];
+				self.text = _G[name.."Text"];
 			</OnLoad>
 			<OnEnter>
-				this.leftHighlight:Show();
-				this.middleHighlight:Show();
-				this.rightHighlight:Show();
+				self.leftHighlight:Show();
+				self.middleHighlight:Show();
+				self.rightHighlight:Show();
 			</OnEnter>
 			<OnLeave>
-				this.leftHighlight:Hide();
-				this.middleHighlight:Hide();
-				this.rightHighlight:Hide();
+				self.leftHighlight:Hide();
+				self.middleHighlight:Hide();
+				self.rightHighlight:Hide();
 			</OnLeave>
 			<OnShow>
-				myPanelTemplates_TabResize(this, 10);
+				myPanelTemplates_TabResize(self, 10);
 			</OnShow>
 		</Scripts>
 		<ButtonText name="$parentText" inherits="GameFontHighlightSmall">
@@ -451,7 +400,7 @@
 		<DisabledFont style="GameFontHighlightSmall"/>
     </Button>
 	<Frame name="AchievementFrameAchievementsObjectives"/>
-	<Frame name="MiniAchievementTemplate" virtual="true" parent="AchievementFrame">
+	<Frame name="AchieverMiniAchievementTemplate" virtual="true" parent="AchievementFrame">
 		<Size>
 			<AbsDimension x="42" y="42"/>
 		</Size>
@@ -502,7 +451,7 @@
 				</Texture>
 			</Layer>
 			<Layer level="OVERLAY">
-				<FontString name="$parentPoints" inherits="GameFontWhiteSmall" text="10" justifyV="BOTTOM">
+				<FontString name="$parentPoints" inherits="AchieverFontWhiteSmall" text="10" justifyV="BOTTOM">
 					<Size>
 						<AbsDimension x="18" y="18"/>
 					</Size>
@@ -518,22 +467,21 @@
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				local _G, _ = _G or getfenv()
-				local name = this:GetName();
-				this.points = _G[name .. "Points"];
-				this.icon = _G[name .. "Icon"];
+				local name = self:GetName();
+				self.points = _G[name .. "Points"];
+				self.icon = _G[name .. "Icon"];
 			</OnLoad>
 			<OnEnter>
-				GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-				if ( this.name ) then
-					GameTooltip:AddDoubleLine(this.name, this.date, nil, nil, nil, .5, .5, .5);
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+				if ( self.name ) then
+					GameTooltip:AddDoubleLine(self.name, self.date, nil, nil, nil, .5, .5, .5);
 				end
-				if ( this.desc ) then
-					GameTooltip:AddLine(this.desc, 1, 1, 1, 1);
+				if ( self.desc ) then
+					GameTooltip:AddLine(self.desc, 1, 1, 1, 1);
 				end
-				if ( this.numCriteria ) then
-					for i = 1, this.numCriteria do
-						GameTooltip:AddLine(this["criteria"..i]);
+				if ( self.numCriteria ) then
+					for i = 1, self.numCriteria do
+						GameTooltip:AddLine(self["criteria"..i]);
 					end
 				end
 				GameTooltip:Show();
@@ -544,7 +492,7 @@
 		</Scripts>
 	</Frame>
 
-	<Button name="MetaCriteriaTemplate" virtual="true">
+	<Button name="AchieverMetaCriteriaTemplate" virtual="true">
 		<Size>
 			<AbsDimension x="155" y="30"/>
 		</Size>
@@ -601,18 +549,17 @@
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				local _G, _ = _G or getfenv()
-				local name = this:GetName();
-				this.icon = _G[name .. "Icon"];
-				this.label = _G[name .. "Label"];
-				this.check = _G[name .. "Check"];
-				this.border = _G[name .. "Border"];
+				local name = self:GetName();
+				self.icon = _G[name .. "Icon"];
+				self.label = _G[name .. "Label"];
+				self.check = _G[name .. "Check"];
+				self.border = _G[name .. "Border"];
 				_G[name .. "HighlightTexture"]:SetVertexColor(1.0, 1.0, 1.0, 0.15);
 			</OnLoad>
 			<OnEnter>
-				if ( this.date ) then
-					GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-					GameTooltip:AddLine(string.format(ACHIEVEMENT_META_COMPLETED_DATE, this.date), 1, 1, 1);
+				if ( self.date ) then
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+					GameTooltip:AddLine(string.format(ACHIEVEMENT_META_COMPLETED_DATE, self.date), 1, 1, 1);
 					GameTooltip:Show();
 				end
 			</OnEnter>
@@ -620,8 +567,8 @@
 				GameTooltip:Hide();
 			</OnLeave>
 			<OnClick>
-				if ( this.id ) then
-					AchievementFrame_SelectAchievement(this.id);
+				if ( self.id ) then
+					AchievementFrame_SelectAchievement(self.id);
 				end
 			</OnClick>
 		</Scripts>
@@ -708,12 +655,11 @@
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				local _G, _ = _G or getfenv()
-				this:SetStatusBarColor(0, .6, 0, 1);
-				this:SetMinMaxValues(0, 100);
-				this:SetValue(0);
-				this.text = _G[this:GetName() .. "Text"];
-				this:GetStatusBarTexture():SetDrawLayer("BORDER");
+				self:SetStatusBarColor(0, .6, 0, 1);
+				self:SetMinMaxValues(0, 100);
+				self:SetValue(0);
+				self.text = _G[self:GetName() .. "Text"];
+				self:GetStatusBarTexture():SetDrawLayer("BORDER");
 			</OnLoad>
 		</Scripts>
 		<BarTexture file="Interface\AddOns\Achiever\textures\UI-StatusBar"/>
@@ -788,10 +734,9 @@
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				local _G, _ = _G or getfenv()
-				local name = this:GetName();
-				this.title = _G[name .. "Title"];
-				this.text = _G[name .. "Text"];
+				local name = self:GetName();
+				self.title = _G[name .. "Title"];
+				self.text = _G[name .. "Text"];
 			</OnLoad>
 		</Scripts>
 		<BarTexture name="$parentBar" file="Interface\AddOns\Achiever\textures\UI-Character-Skills-Bar"/>
@@ -828,14 +773,14 @@
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				AchievementCategoryButton_OnLoad(this);
+				AchievementCategoryButton_OnLoad(self);
 			</OnLoad>
 			<OnClick>
-				AchievementCategoryButton_OnClick(this, button, down);
+				AchievementCategoryButton_OnClick(self, button, down);
 			</OnClick>
 			<OnEnter>
-				if ( this.showTooltipFunc ) then
-					this.showTooltipFunc(this);
+				if ( self.showTooltipFunc ) then
+					self.showTooltipFunc(self);
 				end
 			</OnEnter>
 			<OnLeave>
@@ -914,7 +859,7 @@
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				AchievementIcon_OnLoad(this);
+				AchievementIcon_OnLoad(self);
 			</OnLoad>
 		</Scripts>
 	</Frame>
@@ -953,28 +898,23 @@
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				local _G, _ = _G or getfenv()
-				local name = this:GetName();
-				this.name = _G[name .. "Name"];
-				this.check = _G[name .. "Check"];
+				local name = self:GetName();
+				self.name = _G[name .. "Name"];
+				self.check = _G[name .. "Check"];
 			</OnLoad>
 			<OnMouseUp>
 				if ( button == "LeftButton" ) then
-					this:GetParent():GetParent():Click();
+					self:GetParent():GetParent():Click();
 				end
 			</OnMouseUp>
 		</Scripts>
 	</Frame>
 
-	<Button name="AchievementTemplate" virtual="true">
+	<Button name="AchievementTemplate" virtual="true" inherits="BackdropTemplate">
 		<Size>
 			<AbsDimension x="434" y="142"/>
 		</Size>
-		<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-			<EdgeSize>
-				<AbsValue val="16"/>
-			</EdgeSize>
-		</Backdrop>
+		<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_1" type="global"/></KeyValues>
 		<Layers>
 			<Layer level="BACKGROUND">
 				<Texture name="$parentBackground" file="Interface\AddOns\Achiever\textures\UI-Achievement-Parchment-Horizontal">
@@ -1136,7 +1076,7 @@
 				</Texture>
 			</Layer>
 			<Layer level="OVERLAY">
-				<FontString name="$parentLabel" inherits="GameFontHighlightMedium" text="For the Alliance!">
+				<FontString name="$parentLabel" inherits="AchieverFontHighlightMedium" text="For the Alliance!">
 					<Size>
 						<AbsDimension x="320" y="20"/>
 					</Size>
@@ -1153,7 +1093,7 @@
 						<AbsDimension x="100" y="14"/>
 					</Size>
 					<Anchors>
-						<!-- This is a fake anchor. We don't want DateCompleted to be anchored to top. We reanchor it in AchievementButton_OnLoad so that it can be anchored to the shield, which is a frame, and not loaded at this point. -->
+						<!-- This is a fake anchor. We don't want DateCompleted to be anchored to top. We reanchor it in AchievementButton_OnLoad so that it can be anchored to the shield, which is a frame, and not loaded at self point. -->
 						<Anchor point="TOP"/>
 					</Anchors>
 				</FontString>
@@ -1218,22 +1158,22 @@
 			</Layer>
 		</Layers>
 		<Scripts>
-			<OnLoad>
-				this.mouseOver = false
-				AchievementButton_OnLoad(this);
+			<OnLoad inherit="prepend">
+				self.mouseOver = false
+				AchievementButton_OnLoad(self);
 			</OnLoad>
 			<OnClick>
-				AchievementButton_OnClick(this);
+				AchievementButton_OnClick(self);
 			</OnClick>
 			<OnEnter>
-				this.mouseOver = true
-				this.highlight:Show();
+				self.mouseOver = true
+				self.highlight:Show();
 			</OnEnter>
 			<OnLeave>
-				if ( not this.selected ) then
-					this.highlight:Hide();
+				if ( not self.selected ) then
+					self.highlight:Hide();
 				end
-				this.mouseOver = false
+				self.mouseOver = false
 			</OnLeave>
 		</Scripts>
 		<Frames>
@@ -1375,7 +1315,7 @@
 				</Layers>
 				<Scripts>
 					<OnLoad>
-						AchievementShield_OnLoad(this);
+						AchievementShield_OnLoad(self);
 					</OnLoad>
 				</Scripts>
 			</Frame>
@@ -1412,13 +1352,9 @@
 			</CheckButton>
 		</Frames>
 	</Button>
-	<Frame name="ComparisonPlayerTemplate" virtual="true">
+	<Frame name="AchieverComparisonPlayerTemplate" virtual="true" inherits="BackdropTemplate">
 		<Size x="498" y="50"/>
-		<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-			<EdgeSize>
-				<AbsValue val="16"/>
-			</EdgeSize>
-		</Backdrop>
+		<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_1" type="global"/></KeyValues>
 		<Layers>
 			<Layer level="BACKGROUND">
 				<Texture name="$parentBackground" file="Interface\AddOns\Achiever\textures\UI-Achievement-Parchment-Horizontal">
@@ -1472,7 +1408,7 @@
 				</Texture>
 			</Layer>
 			<Layer level="OVERLAY">
-				<FontString name="$parentLabel" inherits="GameFontHighlightMedium" text="For the Alliance!">
+				<FontString name="$parentLabel" inherits="AchieverFontHighlightMedium" text="For the Alliance!">
 					<Anchors>
 						<Anchor point="TOP" relativeTo="$parentTitleBackground" relativePoint="TOP">
 							<Offset>
@@ -1511,8 +1447,8 @@
 			</Layer>
 		</Layers>
 		<Scripts>
-			<OnLoad>
-				AchievementComparisonPlayerButton_OnLoad(this);
+			<OnLoad inherit="prepend">
+				AchievementComparisonPlayerButton_OnLoad(self);
 			</OnLoad>
 		</Scripts>
 		<Frames>
@@ -1574,7 +1510,7 @@
 				</Layers>
 				<Scripts>
 					<OnLoad>
-						AchievementIcon_OnLoad(this);
+						AchievementIcon_OnLoad(self);
 					</OnLoad>
 				</Scripts>
 			</Frame>
@@ -1622,13 +1558,13 @@
 				</Layers>
 				<Scripts>
 					<OnLoad>
-						AchievementShield_OnLoad(this);
+						AchievementShield_OnLoad(self);
 					</OnLoad>
 				</Scripts>
 			</Frame>
 		</Frames>
 	</Frame>
-	<Frame name="SummaryAchievementTemplate" inherits="ComparisonPlayerTemplate" virtual="true">
+	<Frame name="AchieverSummaryAchievementTemplate" inherits="AchieverComparisonPlayerTemplate" virtual="true">
 		<Size x="100" y="48"/>
 		<Frames>
 			<Frame name="$parentHighlight" setAllPoints="true" hidden="true" enableMouse="false">
@@ -1720,41 +1656,38 @@
 		</Frames>
 		<Scripts>
 			<OnLoad>
-				AchievementFrameSummaryAchievement_OnLoad(this);
+				if (self.OnBackdropLoaded) then self:OnBackdropLoaded(); end
+				AchievementFrameSummaryAchievement_OnLoad(self);
 			</OnLoad>
 			<OnClick>
-				AchievementFrameSummaryAchievement_OnClick(this, button, down);
+				AchievementFrameSummaryAchievement_OnClick(self, button, down);
 			</OnClick>
 			<OnEnter>
-				AchievementFrameSummaryAchievement_OnEnter(this, motion);
+				AchievementFrameSummaryAchievement_OnEnter(self, motion);
 			</OnEnter>
 			<OnLeave>
-				this.highlight:Hide();
+				self.highlight:Hide();
 				GameTooltip:Hide();
 			</OnLeave>
 		</Scripts>
 	</Frame>
-	<Frame name="ComparisonTemplate" virtual="true">
+	<Frame name="AchieverComparisonTemplate" virtual="true">
 		<Size x="616" y="50"/>
 		<Anchors>
 			<Anchor point="CENTER"/>
 		</Anchors>
 		<Frames>
-			<Frame name="$parentPlayer" inherits="ComparisonPlayerTemplate">
+			<Frame name="$parentPlayer" inherits="AchieverComparisonPlayerTemplate">
 				<Anchors>
 					<Anchor point="LEFT"/>
 				</Anchors>
 			</Frame>
-			<Frame name="$parentFriend">
+			<Frame name="$parentFriend" inherits="BackdropTemplate">
 				<Size x="120" y="50"/>
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="$parentPlayer" relativePoint="RIGHT"/>
 				</Anchors>
-				<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-					<EdgeSize>
-						<AbsValue val="16"/>
-					</EdgeSize>
-				</Backdrop>
+				<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_1" type="global"/></KeyValues>
 				<Layers>
 					<Layer level="BACKGROUND">
 						<Texture name="$parentBackground" file="Interface\AddOns\Achiever\textures\UI-Achievement-Parchment-Horizontal">
@@ -1877,7 +1810,7 @@
 						</Layers>
 						<Scripts>
 							<OnLoad>
-								AchievementIcon_OnLoad(this);
+								AchievementIcon_OnLoad(self);
 							</OnLoad>
 						</Scripts>
 					</Frame>
@@ -1925,29 +1858,28 @@
 						</Layers>
 						<Scripts>
 							<OnLoad>
-								AchievementShield_OnLoad(this);
+								AchievementShield_OnLoad(self);
 							</OnLoad>
 						</Scripts>
 					</Frame>
 				</Frames>
 				<Scripts>
-					<OnLoad>
-						AchievementComparisonFriendButton_OnLoad(this);
+					<OnLoad inherit="prepend">
+						AchievementComparisonFriendButton_OnLoad(self);
 					</OnLoad>
 				</Scripts>
 			</Frame>
 		</Frames>
 		<Scripts>
 			<OnLoad>
-				local _G, _ = _G or getfenv()
-				local name = this:GetName();
-				this.player = _G[name .. "Player"];
-				this.friend = _G[name .. "Friend"];
+				local name = self:GetName();
+				self.player = _G[name .. "Player"];
+				self.friend = _G[name .. "Friend"];
 			</OnLoad>
 		</Scripts>
 	</Frame>
 
-	<Button name="StatTemplate" virtual="true" hidden="true">
+	<Button name="AchieverStatTemplate" virtual="true" hidden="true">
 		<Size x="511" y="24"/>
 		<Layers>
 			<Layer level="BACKGROUND">
@@ -1995,7 +1927,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="$parentValue" inherits="GameFontHighlightRight">
+				<FontString name="$parentValue" inherits="AchieverFontHighlightRight">
 					<Anchors>
 						<Anchor point="RIGHT">
 							<Offset x="-5" y="0"/>
@@ -2006,13 +1938,13 @@
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				AchievementStatButton_OnLoad(this, AchievementFrameStats);
+				AchievementStatButton_OnLoad(self, AchievementFrameStats);
 			</OnLoad>
 			<OnClick>
-				AchievementStatButton_OnClick(this, button, down);
+				AchievementStatButton_OnClick(self, button, down);
 			</OnClick>
 		</Scripts>
-		<ButtonText name="$parentText" inherits="GameFontHighlightLeft">
+		<ButtonText name="$parentText" inherits="AchieverFontHighlightLeft">
 			<Size x="400" y="13"/>
 			<Anchors>
 				<Anchor point="LEFT">
@@ -2022,13 +1954,13 @@
 				</Anchor>
 			</Anchors>
 		</ButtonText>
-		<NormalFont style="GameFontHighlightLeft"/>
+		<NormalFont style="AchieverFontHighlightLeft"/>
 		<HighlightTexture file="Interface\AddOns\Achiever\textures\UI-Achievement-Stat-Buttons" alphaMode="ADD">
 			<TexCoords left="0" right="1" top="0.5546875" bottom="0.7265625"/>
 		</HighlightTexture>
 	</Button>
 
-	<Frame name="ComparisonStatTemplate" virtual="true">
+	<Frame name="AchieverComparisonStatTemplate" virtual="true">
 		<Size x="511" y="24"/>
 		<Layers>
 			<Layer level="BACKGROUND">
@@ -2112,14 +2044,14 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="$parentText" inherits="GameFontHighlightLeft">
+				<FontString name="$parentText" inherits="AchieverFontHighlightLeft">
 					<Anchors>
 						<Anchor point="LEFT">
 							<Offset x="4" y="0"/>
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="$parentValue" inherits="GameFontHighlightRight">
+				<FontString name="$parentValue" inherits="AchieverFontHighlightRight">
 					<Size x="500" y="24"/>
 					<Anchors>
 						<Anchor point="RIGHT">
@@ -2127,7 +2059,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="$parentComparisonValue" inherits="GameFontHighlightRight">
+				<FontString name="$parentComparisonValue" inherits="AchieverFontHighlightRight">
 					<Size x="120" y="24"/>
 					<Anchors>
 						<Anchor point="RIGHT">
@@ -2147,9 +2079,9 @@
 				</Anchors>
 				<Scripts>
 					<OnEnter>
-						local tooltip = this.tooltip;
+						local tooltip = self.tooltip;
 						if ( tooltip ) then
-							GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+							GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
 							GameTooltip:SetText(tooltip, nil, nil, nil, nil, 1);
 						end
 					</OnEnter>
@@ -2161,22 +2093,22 @@
 		</Frames>
 		<Scripts>
 			<OnLoad>
-				AchievementFrameComparisonStat_OnLoad(this);
+				AchievementFrameComparisonStat_OnLoad(self);
 			</OnLoad>
 		</Scripts>
 	</Frame>
 
-	<Button name="SummaryStatTemplate" inherits="StatTemplate" virtual="true">
+	<Button name="AchieverSummaryStatTemplate" inherits="AchieverStatTemplate" virtual="true">
 		<Scripts>
 			<OnLoad>
-				this.summary = true;
-				AchievementStatButton_OnLoad(this, AchievementFrameSummaryStats);
-				this:SetHeight(18);
+				self.summary = true;
+				AchievementStatButton_OnLoad(self, AchievementFrameSummaryStats);
+				self:SetHeight(18);
 			</OnLoad>
 		</Scripts>
 	</Button>
 
-	<Frame name="AchievementFrame" toplevel="true" movable="true" parent="UIParent" frameStrata="MEDIUM" hidden="true" enableMouse="true">
+	<Frame name="AchievementFrame" toplevel="true" movable="true" parent="UIParent" frameStrata="MEDIUM" hidden="true" enableMouse="true" inherits="BackdropTemplate">
 		<Size>
 			<AbsDimension x="768" y="500"/>
 		</Size>
@@ -2187,17 +2119,7 @@
 				</Offset>
 			</Anchor>
 		</Anchors>
-		<Backdrop edgeFile="Interface\AddOns\Achiever\textures\UI-Achievement-WoodBorder" tile="true">
-			<EdgeSize>
-				<AbsValue val="64"/>
-			</EdgeSize>
-			<TileSize>
-				<AbsValue val="32"/>
-			</TileSize>
-			<BackgroundInsets>
-				<AbsInset left="5" right="5" top="5" bottom="5"/>
-			</BackgroundInsets>
-		</Backdrop>
+		<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_2" type="global"/></KeyValues>
 		<Layers>
 			<Layer level="BACKGROUND">
 				<Texture name="$parentBackground" file="Interface\TutorialFrame\TutorialFrameBackground">
@@ -2498,7 +2420,7 @@
 					</Layer>
 				</Layers>
 			</Frame>
-			<Frame name="$parentCategories">
+			<Frame name="$parentCategories" inherits="BackdropTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT">
 						<Offset>
@@ -2514,26 +2436,16 @@
 				<Size>
 					<AbsDimension x="175" y="0"/>
 				</Size>
-				<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-					<EdgeSize>
-						<AbsValue val="16"/>
-					</EdgeSize>
-					<TileSize>
-						<AbsValue val="16"/>
-					</TileSize>
-					<BackgroundInsets>
-						<AbsInset left="5" right="5" top="5" bottom="5"/>
-					</BackgroundInsets>
-				</Backdrop>
+				<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_3" type="global"/></KeyValues>
 				<Scripts>
-					<OnLoad>
-						AchievementFrameCategories_OnLoad(this);
+					<OnLoad inherit="prepend">
+						AchievementFrameCategories_OnLoad(self);
 					</OnLoad>
 					<OnEvent>
-						AchievementFrameCategories_OnEvent();
+						AchievementFrameCategories_OnEvent(self, event, ...);
 					</OnEvent>
 					<OnShow>
-						AchievementFrameCategories_OnShow(this);
+						AchievementFrameCategories_OnShow(self);
 					</OnShow>
 				</Scripts>
 				<Frames>
@@ -2654,10 +2566,10 @@
 				</Layers>
 				<Scripts>
 					<OnLoad>
-						AchievementFrameAchievements_OnLoad(this);
+						AchievementFrameAchievements_OnLoad(self);
 					</OnLoad>
 					<OnEvent>
-						AchievementFrameAchievements_OnEvent(this, event, ...);
+						AchievementFrameAchievements_OnEvent(self, event, ...);
 					</OnEvent>
 					<OnHide>
 						AchievementFrameFilterDropDown:Hide();
@@ -2712,21 +2624,11 @@
 							</Slider>
 						</Frames>
 					</ScrollFrame>
-					<Frame setAllPoints="true">
-						<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-							<EdgeSize>
-								<AbsValue val="16"/>
-							</EdgeSize>
-							<TileSize>
-								<AbsValue val="16"/>
-							</TileSize>
-							<BackgroundInsets>
-								<AbsInset left="5" right="5" top="5" bottom="5"/>
-							</BackgroundInsets>
-						</Backdrop>
+					<Frame setAllPoints="true" inherits="BackdropTemplate">
+						<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_3" type="global"/></KeyValues>
 						<Scripts>
-							<OnLoad>
-								AchievementFrameAchievementsBackdrop_OnLoad(this);
+							<OnLoad inherit="prepend">
+								AchievementFrameAchievementsBackdrop_OnLoad(self);
 							</OnLoad>
 						</Scripts>
 					</Frame>
@@ -2746,10 +2648,10 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						AchievementFrameStats_OnLoad(this);
+						AchievementFrameStats_OnLoad(self);
 					</OnLoad>
 					<OnEvent>
-						AchievementFrameStats_OnEvent(this, event, ...);
+						AchievementFrameStats_OnEvent(self, event, ...);
 					</OnEvent>
 				</Scripts>
 				<Frames>
@@ -2780,7 +2682,7 @@
 						</Layers>
 						<Scripts>
 							<OnLoad>
-								LowerFrameLevel(this);
+								self:SetFrameLevel(self:GetFrameLevel() - 1);
 							</OnLoad>
 						</Scripts>
 					</Frame>
@@ -2828,21 +2730,11 @@
 							</Slider>
 						</Frames>
 					</ScrollFrame>
-					<Frame setAllPoints="true">
-						<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-							<EdgeSize>
-								<AbsValue val="16"/>
-							</EdgeSize>
-							<TileSize>
-								<AbsValue val="16"/>
-							</TileSize>
-							<BackgroundInsets>
-								<AbsInset left="5" right="5" top="5" bottom="5"/>
-							</BackgroundInsets>
-						</Backdrop>
+					<Frame setAllPoints="true" inherits="BackdropTemplate">
+						<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_3" type="global"/></KeyValues>
 						<Scripts>
-							<OnLoad>
-								AchievementFrameAchievementsBackdrop_OnLoad(this);
+							<OnLoad inherit="prepend">
+								AchievementFrameAchievementsBackdrop_OnLoad(self);
 							</OnLoad>
 						</Scripts>
 					</Frame>
@@ -2875,21 +2767,11 @@
 					</Layer>
 				</Layers>
 				<Frames>
-					<Frame setAllPoints="true">
-						<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-							<EdgeSize>
-								<AbsValue val="16"/>
-							</EdgeSize>
-							<TileSize>
-								<AbsValue val="16"/>
-							</TileSize>
-							<BackgroundInsets>
-								<AbsInset left="5" right="5" top="5" bottom="5"/>
-							</BackgroundInsets>
-						</Backdrop>
+					<Frame setAllPoints="true" inherits="BackdropTemplate">
+						<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_3" type="global"/></KeyValues>
 						<Scripts>
-							<OnLoad>
-								AchievementFrameAchievementsBackdrop_OnLoad(this);
+							<OnLoad inherit="prepend">
+								AchievementFrameAchievementsBackdrop_OnLoad(self);
 							</OnLoad>
 						</Scripts>
 					</Frame>
@@ -3136,7 +3018,7 @@
 				</Frames>
 				<Scripts>
 					<!-- <OnLoad>
-						self:RegisterEvent("ACHIEVEMENT_EARNED");
+						pcall(self.RegisterEvent, self, "ACHIEVEMENT_EARNED");
 					</OnLoad> -->
 					<OnEvent>
 						AchievementFrameSummary_Update();
@@ -3219,9 +3101,8 @@
 						<Scripts>
 							<OnShow>
 								--Temporaries
-								local _G, _ = _G or getfenv()
-								SetPortraitTexture(_G[this:GetName().."Portrait"], "player");
-								this:SetFrameLevel(this:GetParent():GetFrameLevel() + 4);
+								SetPortraitTexture(_G[self:GetName().."Portrait"], "player");
+								self:SetFrameLevel(self:GetParent():GetFrameLevel() + 4);
 							</OnShow>
 						</Scripts>
 					</Frame>
@@ -3235,16 +3116,12 @@
 						</Anchors>
 						<Size x="616" y="50"/>
 						<Frames>
-							<Frame name="$parentPlayer">
+							<Frame name="$parentPlayer" inherits="BackdropTemplate">
 								<Size x="498" y="50"/>
 								<Anchors>
 									<Anchor point="LEFT"/>
 								</Anchors>
-								<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-									<EdgeSize>
-										<AbsValue val="16"/>
-									</EdgeSize>
-								</Backdrop>
+								<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_1" type="global"/></KeyValues>
 								<Layers>
 									<Layer level="BACKGROUND">
 										<Texture name="$parentBackground" file="Interface\AddOns\Achiever\textures\UI-Achievement-Parchment-Horizontal">
@@ -3278,23 +3155,18 @@
 									</StatusBar>
 								</Frames>
 								<Scripts>
-									<OnLoad>
-										local _G, _ = _G or getfenv()
-										this:SetBackdropBorderColor(0.4, 0.2, 0, 1);
-										this.statusBar = _G[this:GetName().."StatusBar"];
+									<OnLoad inherit="prepend">
+										self:SetBackdropBorderColor(0.4, 0.2, 0, 1);
+										self.statusBar = _G[self:GetName().."StatusBar"];
 									</OnLoad>
 								</Scripts>
 							</Frame>
-							<Frame name="$parentFriend">
+							<Frame name="$parentFriend" inherits="BackdropTemplate">
 								<Size x="120" y="50"/>
 								<Anchors>
 									<Anchor point="LEFT" relativeTo="$parentPlayer" relativePoint="RIGHT"/>
 								</Anchors>
-								<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-									<EdgeSize>
-										<AbsValue val="16"/>
-									</EdgeSize>
-								</Backdrop>
+								<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_1" type="global"/></KeyValues>
 								<Layers>
 									<Layer level="BACKGROUND">
 										<Texture name="$parentBackground" file="Interface\AddOns\Achiever\textures\UI-Achievement-Parchment-Horizontal">
@@ -3320,11 +3192,10 @@
 									</StatusBar>
 								</Frames>
 								<Scripts>
-									<OnLoad>
-										local _G, _ = _G or getfenv()
-										this:SetBackdropBorderColor(0.4, 0.2, 0, 1);
-										this.statusBar = _G[this:GetName().."StatusBar"];
-										this.statusBar.title:Hide();
+									<OnLoad inherit="prepend">
+										self:SetBackdropBorderColor(0.4, 0.2, 0, 1);
+										self.statusBar = _G[self:GetName().."StatusBar"];
+										self.statusBar.title:Hide();
 									</OnLoad>
 								</Scripts>
 							</Frame>
@@ -3377,15 +3248,13 @@
 						</Frames>
 						<Scripts>
 							<OnShow>
-								local _G, _ = _G or getfenv()
-								local parentName = this:GetParent():GetName();
+								local parentName = self:GetParent():GetName();
 								_G[parentName .. "Summary"]:Show();
 								_G[parentName .. "Watermark"]:Hide();
 								_G[parentName .. "Dark"]:Show();
 							</OnShow>
 							<OnHide>
-								local _G, _ = _G or getfenv()
-								local parentName = this:GetParent():GetName();
+								local parentName = self:GetParent():GetName();
 								_G[parentName .. "Summary"]:Hide();
 							</OnHide>
 						</Scripts>
@@ -3435,28 +3304,17 @@
 						</Frames>
 						<Scripts>
 							<OnShow>
-								local _G, _ = _G or getfenv()
-								local parentName = this:GetParent():GetName();
+								local parentName = self:GetParent():GetName();
 								_G[parentName .. "Watermark"]:Show();
 								_G[parentName .. "Dark"]:Hide();
 							</OnShow>
 						</Scripts>
 					</ScrollFrame>
-					<Frame setAllPoints="true">
-						<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-							<EdgeSize>
-								<AbsValue val="16"/>
-							</EdgeSize>
-							<TileSize>
-								<AbsValue val="16"/>
-							</TileSize>
-							<BackgroundInsets>
-								<AbsInset left="5" right="5" top="5" bottom="5"/>
-							</BackgroundInsets>
-						</Backdrop>
+					<Frame setAllPoints="true" inherits="BackdropTemplate">
+						<KeyValues><KeyValue key="backdropInfo" value="ACHIEVER_BACKDROP_3" type="global"/></KeyValues>
 						<Scripts>
-							<OnLoad>
-								AchievementFrameAchievementsBackdrop_OnLoad(this);
+							<OnLoad inherit="prepend">
+								AchievementFrameAchievementsBackdrop_OnLoad(self);
 							</OnLoad>
 						</Scripts>
 					</Frame>
@@ -3505,10 +3363,10 @@
 				</Layers>
 				<Scripts>
 					<OnLoad>
-						AchievementFrameComparison_OnLoad(this);
+						AchievementFrameComparison_OnLoad(self);
 					</OnLoad>
 					<OnEvent>
-						AchievementFrameComparison_OnEvent(this, event, ...);
+						AchievementFrameComparison_OnEvent(self, event, ...);
 					</OnEvent>
 					<OnShow>
 						AchievementFrameComparison_OnShow();
@@ -3527,7 +3385,7 @@
 				<Scripts>
 					<OnShow>
 						if ( AchievementFrameComparisonHeader:IsShown() ) then
-							this:SetFrameLevel(AchievementFrameComparisonHeader:GetFrameLevel() + 1);
+							self:SetFrameLevel(AchievementFrameComparisonHeader:GetFrameLevel() + 1);
 						end
 					</OnShow>
 				</Scripts>
@@ -3542,10 +3400,10 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						AchievementFrameTab_OnClick(this:GetID());
-						this.text:SetPoint("CENTER", this, "CENTER", 0, -5);
+						AchievementFrameTab_OnClick(self:GetID());
+						self.text:SetPoint("CENTER", self, "CENTER", 0, -5);
 						AchievementFrameTab2.text:SetPoint("CENTER", AchievementFrameTab2, "CENTER", 0, -3);
-						PlaySound("igCharacterInfoTab");
+						Achiever_PlaySound("igCharacterInfoTab");
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -3559,10 +3417,10 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						AchievementFrameTab_OnClick(this:GetID());
-						this.text:SetPoint("CENTER", this, "CENTER", 0, -5);
+						AchievementFrameTab_OnClick(self:GetID());
+						self.text:SetPoint("CENTER", self, "CENTER", 0, -5);
 						AchievementFrameTab1.text:SetPoint("CENTER", AchievementFrameTab1, "CENTER", 0, -3);
-						PlaySound("igCharacterInfoTab");
+						Achiever_PlaySound("igCharacterInfoTab");
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -3596,8 +3454,8 @@
 						</Anchors>
 						<Scripts>
 							<OnClick>
-								myToggleDropDownMenu(nil, nil, this:GetParent());
-								PlaySound("igMainMenuOptionCheckBoxOn");
+								myToggleDropDownMenu(nil, nil, self:GetParent());
+								Achiever_PlaySound("igMainMenuOptionCheckBoxOn");
 							</OnClick>
 						</Scripts>
 						<NormalTexture name="$parentNormalTexture" file="Interface\AddOns\Achiever\textures\UI-ChatIcon-ScrollDown-Up">
@@ -3636,16 +3494,16 @@
 				</Frames>
 				<Scripts>
 					<OnLoad>
-						this:RegisterForDrag("LeftButton")
-						AchievementFrameFilterDropDown_OnLoad(this);
+						self:RegisterForDrag("LeftButton")
+						AchievementFrameFilterDropDown_OnLoad(self);
 					</OnLoad>
 					<OnDragStart>
-						this:LockHighlight()
-						this:StartMoving()
+						self:LockHighlight()
+						self:StartMoving()
 					</OnDragStart>
 					<OnDragStop>
-						this:UnlockHighlight()
-						this:StopMovingOrSizing()
+						self:UnlockHighlight()
+						self:StopMovingOrSizing()
 					</OnDragStop>
 					<OnHide>
 						myCloseDropDownMenus()
@@ -3654,14 +3512,14 @@
 			</Frame>
 		</Frames>
 		<Scripts>
-			<OnLoad>
-				AchievementFrame_OnLoad(this);
+			<OnLoad inherit="prepend">
+				AchievementFrame_OnLoad(self);
 			</OnLoad>
 			<OnShow>
-				AchievementFrame_OnShow(this);
+				AchievementFrame_OnShow(self);
 			</OnShow>
 			<OnHide>
-				AchievementFrame_OnHide(this);
+				AchievementFrame_OnHide(self);
 			</OnHide>
 		</Scripts>
 	</Frame>

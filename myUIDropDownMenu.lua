@@ -1,4 +1,3 @@
-local _G, _ = _G or getfenv()
 
 local function debug(msg)
 	-- DEFAULT_CHAT_FRAME:AddMessage('|cffc663fcDEBUG: |cffff55ff'.. (msg or 'nil'))
@@ -60,12 +59,12 @@ function myUIDropDownMenu_InitializeHelper (frame)
 	-- Hide all the buttons
 	local button, dropDownList;
 	for i = 1, MYUIDROPDOWNMENU_MAXLEVELS, 1 do
-		dropDownList = _G["DropDownList"..i];
+		dropDownList = _G["myDropDownList"..i];
 		if ( i >= MYUIDROPDOWNMENU_MENU_LEVEL or frame ~= MYUIDROPDOWNMENU_OPEN_MENU ) then
 			dropDownList.numButtons = 0;
 			dropDownList.maxWidth = 0;
 			for j=1, MYUIDROPDOWNMENU_MAXBUTTONS, 1 do
-				button = _G["DropDownList"..i.."Button"..j];
+				button = _G["myDropDownList"..i.."Button"..j];
 				button:Hide();
 			end
 			dropDownList:Hide();
@@ -230,10 +229,23 @@ function myUIDropDownMenu_CreateInfo()
 	return info;
 end
 
+-- Selection state accessors (self-contained: the module no longer relies on Blizzard's UIDropDownMenu_*)
+function myUIDropDownMenu_GetSelectedName(frame)
+	return frame.selectedName;
+end
+
+function myUIDropDownMenu_GetSelectedID(frame)
+	return frame.selectedID;
+end
+
+function myUIDropDownMenu_GetSelectedValue(frame)
+	return frame.selectedValue;
+end
+
 function myUIDropDownMenu_CreateFrames(level, index)
 	while ( level > MYUIDROPDOWNMENU_MAXLEVELS ) do
 		MYUIDROPDOWNMENU_MAXLEVELS = MYUIDROPDOWNMENU_MAXLEVELS + 1;
-		local newList = CreateFrame("Button", "DropDownList"..MYUIDROPDOWNMENU_MAXLEVELS, nil, "myUIDropDownListTemplate");
+		local newList = CreateFrame("Button", "myDropDownList"..MYUIDROPDOWNMENU_MAXLEVELS, nil, "myUIDropDownListTemplate");
 		newList:SetFrameStrata("FULLSCREEN_DIALOG");
 		newList:SetToplevel(1);
 		newList:Hide();
@@ -241,7 +253,7 @@ function myUIDropDownMenu_CreateFrames(level, index)
 		newList:SetWidth(180)
 		newList:SetHeight(10)
 		for i=MYUIDROPDOWNMENU_MINBUTTONS+1, MYUIDROPDOWNMENU_MAXBUTTONS do
-			local newButton = CreateFrame("Button", "DropDownList"..MYUIDROPDOWNMENU_MAXLEVELS.."Button"..i, newList, "myUIDropDownMenuButtonTemplate");
+			local newButton = CreateFrame("Button", "myDropDownList"..MYUIDROPDOWNMENU_MAXLEVELS.."Button"..i, newList, "myUIDropDownMenuButtonTemplate");
 			newButton:SetID(i);
 		end
 	end
@@ -249,7 +261,7 @@ function myUIDropDownMenu_CreateFrames(level, index)
 	while ( index > MYUIDROPDOWNMENU_MAXBUTTONS ) do
 		MYUIDROPDOWNMENU_MAXBUTTONS = MYUIDROPDOWNMENU_MAXBUTTONS + 1;
 		for i=1, MYUIDROPDOWNMENU_MAXLEVELS do
-			local newButton = CreateFrame("Button", "DropDownList"..i.."Button"..MYUIDROPDOWNMENU_MAXBUTTONS, _G["DropDownList"..i], "myUIDropDownMenuButtonTemplate");
+			local newButton = CreateFrame("Button", "myDropDownList"..i.."Button"..MYUIDROPDOWNMENU_MAXBUTTONS, _G["myDropDownList"..i], "myUIDropDownMenuButtonTemplate");
 			newButton:SetID(MYUIDROPDOWNMENU_MAXBUTTONS);
 		end
 	end
@@ -266,7 +278,7 @@ function myUIDropDownMenu_AddButton(info, level)
 		level = 1;
 	end
 
-	local listFrame = _G["DropDownList"..level];
+	local listFrame = _G["myDropDownList"..level];
 	local index = listFrame and (listFrame.numButtons + 1) or 1;
 	local width;
 
@@ -278,7 +290,7 @@ function myUIDropDownMenu_AddButton(info, level)
 	myUIDropDownMenuDelegate["createframes"] = true
 	myUIDropDownMenuDelegate_OnAttributeChanged(myUIDropDownMenuDelegate, 'createframes', true)
 
-	listFrame = listFrame or _G["DropDownList"..level];
+	listFrame = listFrame or _G["myDropDownList"..level];
 	local listFrameName = listFrame:GetName();
 
 	-- Set the number of buttons in the listframe
@@ -356,11 +368,11 @@ function myUIDropDownMenu_AddButton(info, level)
 		end
 		-- Check to see if there is a replacement font
 		if ( info.fontObject ) then
-			button:SetTextFontObject(info.fontObject)
+			button:SetNormalFontObject(info.fontObject);
 			-- button:SetNormalFontObject(info.fontObject);
 			button:SetHighlightFontObject(info.fontObject);
 		else
-			button:SetTextFontObject(GameFontHighlightSmallLeft)
+			button:SetNormalFontObject(GameFontHighlightSmallLeft);
 			-- button:SetNormalFontObject(GameFontHighlightSmallLeft);
 			button:SetHighlightFontObject(GameFontHighlightSmallLeft);
 		end
@@ -439,16 +451,16 @@ function myUIDropDownMenu_AddButton(info, level)
 
 	-- See if button is selected by id or name
 	if ( frame ) then
-		if ( UIDropDownMenu_GetSelectedName(frame) ) then
-			if ( button:GetText() == UIDropDownMenu_GetSelectedName(frame) ) then
+		if ( myUIDropDownMenu_GetSelectedName(frame) ) then
+			if ( button:GetText() == myUIDropDownMenu_GetSelectedName(frame) ) then
 				info.checked = 1;
 			end
-		elseif ( UIDropDownMenu_GetSelectedID(frame) ) then
-			if ( button:GetID() == UIDropDownMenu_GetSelectedID(frame) ) then
+		elseif ( myUIDropDownMenu_GetSelectedID(frame) ) then
+			if ( button:GetID() == myUIDropDownMenu_GetSelectedID(frame) ) then
 				info.checked = 1;
 			end
-		elseif ( UIDropDownMenu_GetSelectedValue(frame) ) then
-			if ( button.value == UIDropDownMenu_GetSelectedValue(frame) ) then
+		elseif ( myUIDropDownMenu_GetSelectedValue(frame) ) then
+			if ( button.value == myUIDropDownMenu_GetSelectedValue(frame) ) then
 				info.checked = 1;
 			end
 		end
@@ -473,7 +485,7 @@ function myUIDropDownMenu_AddButton(info, level)
 	-- If has a colorswatch, show it and vertex color it
 	local colorSwatch = _G[listFrameName.."Button"..index.."ColorSwatch"];
 	if ( info.hasColorSwatch ) then
-		_G["DropDownList"..level.."Button"..index.."ColorSwatch".."NormalTexture"]:SetVertexColor(info.r, info.g, info.b);
+		_G["myDropDownList"..level.."Button"..index.."ColorSwatch".."NormalTexture"]:SetVertexColor(info.r, info.g, info.b);
 		button.r = info.r;
 		button.g = info.g;
 		button.b = info.b;
@@ -497,7 +509,7 @@ end
 
 -- 	-- Just redraws the existing menu
 -- 	for i=1, MYUIDROPDOWNMENU_MAXBUTTONS do
--- 		button = _G["DropDownList"..dropdownLevel.."Button"..i];
+-- 		button = _G["myDropDownList"..dropdownLevel.."Button"..i];
 -- 		checked = nil;
 -- 		-- See if checked or not
 -- 		if ( UIDropDownMenu_GetSelectedName(frame) ) then
@@ -515,7 +527,7 @@ end
 -- 		end
 
 -- 		-- If checked show check image
--- 		checkImage = _G["DropDownList"..dropdownLevel.."Button"..i.."Check"];
+-- 		checkImage = _G["myDropDownList"..dropdownLevel.."Button"..i.."Check"];
 -- 		if ( checked ) then
 -- 			if ( useValue ) then
 -- 				myUIDropDownMenu_SetText(frame, button.value);
@@ -549,10 +561,10 @@ end
 -- 		end
 -- 	end
 -- 	for i=1, MYUIDROPDOWNMENU_MAXBUTTONS do
--- 		button = _G["DropDownList"..dropdownLevel.."Button"..i];
+-- 		button = _G["myDropDownList"..dropdownLevel.."Button"..i];
 -- 		button:SetWidth(maxWidth);
 -- 	end
--- 	_G["DropDownList"..dropdownLevel]:SetWidth(maxWidth+25);
+-- 	_G["myDropDownList"..dropdownLevel]:SetWidth(maxWidth+25);
 -- end
 
 -- function UIDropDownMenu_SetSelectedName(frame, name, useValue)
@@ -588,7 +600,7 @@ end
 -- 		-- If no explicit selectedID then try to send the id of a selected value or name
 -- 		local button;
 -- 		for i=1, MYUIDROPDOWNMENU_MAXBUTTONS do
--- 			button = _G["DropDownList"..MYUIDROPDOWNMENU_MENU_LEVEL.."Button"..i];
+-- 			button = _G["myDropDownList"..MYUIDROPDOWNMENU_MENU_LEVEL.."Button"..i];
 -- 			-- See if checked or not
 -- 			if ( UIDropDownMenu_GetSelectedName(frame) ) then
 -- 				if ( button:GetText() == UIDropDownMenu_GetSelectedName(frame) ) then
@@ -643,12 +655,12 @@ function myUIDropDownMenuButton_OnClick(self)
 	end
 
 	if ( playSound ) then
-		PlaySound("UChatScrollButton");
+		Achiever_PlaySound("UChatScrollButton");
 	end
 end
 
 -- function HideDropDownMenu(level)
--- 	local listFrame = _G["DropDownList"..level];
+-- 	local listFrame = _G["myDropDownList"..level];
 -- 	listFrame:Hide();
 -- end
 
@@ -665,8 +677,8 @@ function myToggleDropDownMenu(level, value, dropDownFrame, anchorName, xOffset, 
 	myUIDropDownMenuDelegate_OnAttributeChanged(myUIDropDownMenuDelegate, 'createframes', true)
 	MYUIDROPDOWNMENU_MENU_LEVEL = level;
 	MYUIDROPDOWNMENU_MENU_VALUE = value;
-	local listFrame = _G["DropDownList"..level];
-	local listFrameName = "DropDownList"..level;
+	local listFrame = _G["myDropDownList"..level];
+	local listFrameName = "myDropDownList"..level;
 	local tempFrame;
 	local point, relativePoint, relativeTo;
 	if ( not dropDownFrame ) then
@@ -778,7 +790,7 @@ function myToggleDropDownMenu(level, value, dropDownFrame, anchorName, xOffset, 
 			end
 			listFrame:ClearAllPoints();
 			-- If this is a dropdown button, not the arrow anchor it to itself
-			if ( strsub(button:GetParent():GetName(), 0,12) == "DropDownList" and strlen(button:GetParent():GetName()) == 13 ) then
+			if ( strsub(button:GetParent():GetName(), 1, 14) == "myDropDownList" and strlen(button:GetParent():GetName()) == 15 ) then
 				anchorFrame = button;
 			else
 				anchorFrame = button:GetParent();
@@ -869,7 +881,7 @@ function myToggleDropDownMenu(level, value, dropDownFrame, anchorName, xOffset, 
 			end
 
 			listFrame:ClearAllPoints();
-			listFrame.parentLevel = tonumber(strmatch(anchorFrame:GetName(), "DropDownList(%d+)"));
+			listFrame.parentLevel = tonumber(strmatch(anchorFrame:GetName(), "myDropDownList(%d+)"));
 			listFrame.parentID = anchorFrame:GetID();
 			listFrame:SetPoint(point, anchorFrame, relativePoint, xOffset, yOffset);
 		end
@@ -881,7 +893,7 @@ function myCloseDropDownMenus(level)
 		level = 1;
 	end
 	for i=level, MYUIDROPDOWNMENU_MAXLEVELS do
-		_G["DropDownList"..i]:Hide();
+		_G["myDropDownList"..i]:Hide();
 	end
 end
 
@@ -939,10 +951,10 @@ end
 
 -- 	local button, checkImage;
 -- 	for i=1, MYUIDROPDOWNMENU_MAXBUTTONS do
--- 		button = _G["DropDownList"..MYUIDROPDOWNMENU_MENU_LEVEL.."Button"..i];
+-- 		button = _G["myDropDownList"..MYUIDROPDOWNMENU_MENU_LEVEL.."Button"..i];
 -- 		button:UnlockHighlight();
 
--- 		checkImage = _G["DropDownList"..MYUIDROPDOWNMENU_MENU_LEVEL.."Button"..i.."Check"];
+-- 		checkImage = _G["myDropDownList"..MYUIDROPDOWNMENU_MENU_LEVEL.."Button"..i.."Check"];
 -- 		checkImage:Hide();
 -- 	end
 -- end
@@ -996,15 +1008,15 @@ function myUIDropDownMenuButton_OpenColorPicker(self, button)
 end
 
 -- function UIDropDownMenu_DisableButton(level, id)
--- 	_G["DropDownList"..level.."Button"..id]:Disable();
+-- 	_G["myDropDownList"..level.."Button"..id]:Disable();
 -- end
 
 -- function UIDropDownMenu_EnableButton(level, id)
--- 	_G["DropDownList"..level.."Button"..id]:Enable();
+-- 	_G["myDropDownList"..level.."Button"..id]:Enable();
 -- end
 
 -- function UIDropDownMenu_SetButtonText(level, id, text, colorCode)
--- 	local button = _G["DropDownList"..level.."Button"..id];
+-- 	local button = _G["myDropDownList"..level.."Button"..id];
 -- 	if ( colorCode) then
 -- 		button:SetText(colorCode..text.."|r");
 -- 	else
@@ -1038,9 +1050,9 @@ end
 
 -- function UIDropDownMenu_GetValue(id)
 -- 	--Only works if the dropdown has just been initialized, lame, I know =(
--- 	local button = _G["DropDownList1Button"..id];
+-- 	local button = _G["myDropDownList1Button"..id];
 -- 	if ( button ) then
--- 		return _G["DropDownList1Button"..id].value;
+-- 		return _G["myDropDownList1Button"..id].value;
 -- 	else
 -- 		return nil;
 -- 	end
